@@ -183,8 +183,8 @@
                 <button onclick="askCopilot('為什麼我昨天在高雄園區停留被記怠速？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
                     📖 冷鏈怠速 (引述 RULE-101 銷分)
                 </button>
-                <button onclick="askCopilot('我昨天在加油站怠速 30 分鐘可以銷分嗎？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
-                    📖 西屯加油站 (引述 RULE-101 駁回)
+                <button onclick="askCopilot('液壓尾門關閉後停留 4 分鐘收尾是否扣分？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
+                    📖 5分鐘收尾緩衝 (引述 RULE-102 銷分)
                 </button>
                 <button onclick="askCopilot('在北宜陡坡滿載轉速突破 1900 RPM 被扣分？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
                     📖 陡坡滿載高轉速 (引述 RULE-202 銷分)
@@ -350,7 +350,7 @@
         // HINO 12-Rule Fleet Management Knowledge Base (KB 1 for RAG)
         const hinoRulesKB = [
             { rule_id: "RULE-101", title: "車隊怠速評分與冷鏈物流豁免標準", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 2 款：怠速基準 15%。超過部分按 (怠速% - 15%) * 120 扣分。", exemption: "當車輛停靠於登記之物流園區且 CAN-bus 冷藏庫恆溫運轉 (溫度 < 6°C)，判定為『必要冷鏈怠速』，特許免扣分並復原分數 (+5 分)。", penalty: "若於非物流區 (加油站、路邊等) 且無冷鏈需求，怠速 > 15 分鐘強制維持扣分。" },
-            { rule_id: "RULE-102", title: "廠區裝卸貨與 PTO 動力輸出作業怠速特許", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 3 款：未經報備之停留怠速視為能源浪費。", exemption: "當車輛進行吊桿、液壓尾門或傾卸作業 (CAN-bus PTO 訊號 ON) 時，引擎運轉係提供動力，免予扣分。", penalty: "PTO 訊號未開啟且停留 > 20 分鐘，計入違規怠速。" },
+            { rule_id: "RULE-102", title: "廠區裝卸貨與 PTO 特力動力輸出 5 分鐘收尾緩衝條款", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 3 款：未經報備之停留怠速視為能源浪費。", exemption: "當車輛進行吊桿、液壓尾門或傾卸作業 (engineLoad > 40%) 時免予扣分；作業結束後給予『5 分鐘作業收尾與冷卻緩衝時間』，5 分鐘內收尾熄火者免扣分。", penalty: "若液壓設備關閉超過 5 分鐘後車速仍為 0 且未熄火，自第 5 分 01 秒起開始精確計算違規怠速扣分。" },
             { rule_id: "RULE-103", title: "酷暑高溫環境與駕駛休息熄火條款", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 5 款：駕駛休息應配合服務區熄火。", exemption: "環境氣溫 > 34°C 且停靠於國道服務區，為防暑安全允許最多 30 分鐘空調怠速特許。", penalty: "環境氣溫 < 28°C 休息怠速 > 15 分鐘嚴格扣分。" },
             { rule_id: "RULE-201", title: "綠色經濟轉速區間 (1100~1600 RPM) 巡航加分激勵", category: "轉速控制", clause: "《HINO 車隊規章》第 5 條第 1 款：商業車輛經濟轉速為 1100~1600 RPM。", exemption: "經濟轉速維持率 > 85% 之車輛，頒發綠色駕駛標章並加計節能獎勵 5 分。", penalty: "經濟轉速率 < 60% 需進行換檔教練輔導。" },
             { rule_id: "RULE-202", title: "引擎高轉速 (RPM > 1800) 與重載陡坡動能豁免", category: "轉速控制", clause: "《HINO 車隊規章》第 5 條第 2 款：轉速 > 1800 RPM 按高轉速比例 * 150 加重扣分。", exemption: "行經台 9 線、北宜山路陡坡段且 CAN-bus 負載 > 80% (重載)，高轉速屬『爬坡動能維護操作』，免加重扣分。", penalty: "平路晴天空車深踏油門致 RPM > 1800，維持加重扣分。" },
@@ -808,30 +808,34 @@
         }
 
         // ==============================================================
-        // OPTION B: FULL RAG ENGINE (Retrieval Across 12 HINO Rules)
+        // OPTION B: FULL RAG ENGINE (5-Min Pack-up Buffer Support)
         // ==============================================================
         function executeRAGPipeline(userQuery) {
-            // RAG Step 1: Semantic & Keyword Search across 12 HINO Rules KB
             let matchedRule = hinoRulesKB[0];
             const q = userQuery.toLowerCase();
             
-            if (q.includes('轉速') || q.includes('rpm') || q.includes('爬坡') || q.includes('陡坡')) {
-                matchedRule = hinoRulesKB[4]; // RULE-202 Over-Revving & Heavy Load Uphill
+            if (q.includes('尾門') || q.includes('吊桿') || q.includes('收尾') || q.includes('pto')) {
+                matchedRule = hinoRulesKB[1]; // RULE-102 5-Min Buffer Rule
+            } else if (q.includes('轉速') || q.includes('rpm') || q.includes('爬坡') || q.includes('陡坡')) {
+                matchedRule = hinoRulesKB[4]; // RULE-202
             } else if (q.includes('煞車') || q.includes('急煞') || q.includes('雨') || q.includes('濕滑')) {
-                matchedRule = hinoRulesKB[7]; // RULE-301 Severe Braking & Weather
+                matchedRule = hinoRulesKB[7]; // RULE-301
             } else if (q.includes('空檔') || q.includes('n檔') || q.includes('滑行')) {
-                matchedRule = hinoRulesKB[5]; // RULE-203 Neutral Coasting
-            } else if (q.includes('疲勞') || q.includes('分心') || q.includes('連續駕車')) {
-                matchedRule = hinoRulesKB[8]; // RULE-302 Fatigue & DMS
-            } else if (q.includes('車距') || q.includes('pcs') || q.includes('碰撞')) {
-                matchedRule = hinoRulesKB[9]; // RULE-303 PCS Distance
-            } else if (q.includes('水溫') || q.includes('過熱') || q.includes('冷卻')) {
-                matchedRule = hinoRulesKB[10]; // RULE-401 Overheat Maintenance
+                matchedRule = hinoRulesKB[5]; // RULE-203
+            } else if (q.includes('疲勞') || q.includes('分心')) {
+                matchedRule = hinoRulesKB[8]; // RULE-302
             }
 
-            // RAG Step 2: Search Vehicle Telematics Log KB for CAN-bus & GPS Evidence
             let telematicsEvidence = {};
-            if (userQuery.includes('高雄') || userQuery.includes('園區') || userQuery.includes('冷鏈')) {
+            if (userQuery.includes('尾門') || userQuery.includes('收尾') || userQuery.includes('4分鐘') || userQuery.includes('5分鐘')) {
+                telematicsEvidence = {
+                    status: "APPROVED",
+                    location: "新竹物流轉運站 12 號月台",
+                    sensor_log: "CAN-bus 液壓尾門關閉，引擎負載 engineLoad 降至 14%，收尾停留時間 4 分 12 秒 (在 5 分鐘緩衝期內)",
+                    score_delta: 5,
+                    reason: "符合 RULE-102 條款：液壓作業關閉後停留 4 分 12 秒，在人性化 5 分鐘收尾緩衝期 (5-Min Buffer) 內，准予免扣分！"
+                };
+            } else if (userQuery.includes('高雄') || userQuery.includes('園區') || userQuery.includes('冷鏈')) {
                 telematicsEvidence = {
                     status: "APPROVED",
                     location: "高雄港物流園區 4 號卸貨碼頭 (GPS 22.6142, 120.2915)",
@@ -873,7 +877,6 @@
                 };
             }
 
-            // RAG Step 3: Synthesize Retrieved Prompt
             const ragPrompt = `
 [RAG Context 1: HINO 12大規章庫] ${matchedRule.rule_id} ${matchedRule.title}
 - 扣分依據: ${matchedRule.clause}

@@ -10,11 +10,11 @@
     },
     {
       "rule_id": "RULE-102",
-      "title": "廠區裝卸貨與 PTO 特力動力輸出作業特許",
+      "title": "廠區裝卸貨與 PTO 特力動力輸出 5 分鐘收尾緩衝條款",
       "category": "怠速控管",
       "standard_clause": "《HINO 車隊節能與管理規章》第 4 條第 3 款：未經報備之停留怠速視為能源浪費。",
-      "exemption_condition": "當車輛進行吊桿、液壓尾門或傾卸作業，經由車速 gps.speed == 0 且 CAN-bus 引擎負載 engineLoad > 40% (高於純怠速之 15%) 複合特徵推導，判定為「PTO 特力動力輸出作業」，免予扣分。",
-      "penalty_condition": "引擎負載 engineLoad < 20% 且停留時間超過 20 分鐘，視為無效怠速，計入違規紀錄。"
+      "exemption_condition": "當車輛進行吊桿、液壓尾門或傾卸作業 (carStatus == 2 且 engineLoad > 40%) 時免予扣分；作業結束 (engineLoad 降至 <20%) 後，提供人性化「5 分鐘作業收尾與冷卻緩衝時間 (5-Min Pack-up Buffer)」。5 分鐘內完成收尾、熄火或駛離者免扣分。",
+      "penalty_condition": "若液壓設備關閉超過 5 分鐘後車速仍為 0 且未熄火，自第 5 分 01 秒起開始精確計算違規怠速扣分。"
     },
     {
       "rule_id": "RULE-103",
