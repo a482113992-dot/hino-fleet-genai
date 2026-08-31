@@ -1,203 +1,784 @@
+// Tier 1 ML Metrics + Tier 2 GenAI Contextual Intelligence
 const ecoScoresData = [
   {
     "vehicle_id": "FOH9N06KXC",
+    "driver_name": "謝建志",
+    "route_sector": "國道 1 號 (北部物流主線 - 雨天頻繁)",
     "total_records": 18087,
     "idling_ratio": 0.174,
     "high_rpm_ratio": 0.057,
     "heavy_load_ratio": 0.131,
     "score": 86.0,
     "grade": "B (良好)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「國道 1 號 (北部物流主線 - 雨天頻繁)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 謝建志",
+      "total_distance": "36174 km",
+      "co2_saved": "731.0 kg",
+      "trees_equivalent": 68,
+      "story_narrative": "這一年來，謝建志 您陪伴 HINO 車隊馳騁於「國道 1 號 (北部物流主線 - 雨天頻繁)」。您的『綠色經濟轉速控制』高達 94.3%！在極端天氣與高載重挑戰下，您仍為地球減碳 731.0 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 90% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "YP6LR2GGM2",
+    "driver_name": "方士豪",
+    "route_sector": "台 61 線 (西濱快速道路 - 強側風區域)",
     "total_records": 67754,
     "idling_ratio": 0.222,
     "high_rpm_ratio": 0.029,
     "heavy_load_ratio": 0.158,
     "score": 83.8,
     "grade": "B (良好)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間"
+    "legacy_rule": "怠速比例 > 20% (過高)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「台 61 線 (西濱快速道路 - 強側風區域)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 方士豪",
+      "total_distance": "135508 km",
+      "co2_saved": "712.3 kg",
+      "trees_equivalent": 67,
+      "story_narrative": "這一年來，方士豪 您陪伴 HINO 車隊馳騁於「台 61 線 (西濱快速道路 - 強側風區域)」。您的『綠色經濟轉速控制』高達 97.1%！在極端天氣與高載重挑戰下，您仍為地球減碳 712.3 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 87% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "ASQBKM1VW6",
+    "driver_name": "黃文彬",
+    "route_sector": "高雄港 / 基隆港 物流園區 (排隊等候作業)",
     "total_records": 20000,
     "idling_ratio": 0.161,
     "high_rpm_ratio": 0.078,
     "heavy_load_ratio": 0.164,
     "score": 83.7,
     "grade": "B (良好)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「高雄港 / 基隆港 物流園區 (排隊等候作業)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 黃文彬",
+      "total_distance": "40000 km",
+      "co2_saved": "711.5 kg",
+      "trees_equivalent": 66,
+      "story_narrative": "這一年來，黃文彬 您陪伴 HINO 車隊馳騁於「高雄港 / 基隆港 物流園區 (排隊等候作業)」。您的『綠色經濟轉速控制』高達 92.2%！在極端天氣與高載重挑戰下，您仍為地球減碳 711.5 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 87% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "TPMUFOCRKB",
+    "driver_name": "邱國勝",
+    "route_sector": "國道 1 號 (北部物流主線 - 雨天頻繁)",
     "total_records": 11734,
     "idling_ratio": 0.202,
     "high_rpm_ratio": 0.07,
     "heavy_load_ratio": 0.112,
     "score": 81.0,
     "grade": "B (良好)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間；轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "怠速比例 > 20% (過高)；轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「國道 1 號 (北部物流主線 - 雨天頻繁)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 邱國勝",
+      "total_distance": "23468 km",
+      "co2_saved": "688.5 kg",
+      "trees_equivalent": 64,
+      "story_narrative": "這一年來，邱國勝 您陪伴 HINO 車隊馳騁於「國道 1 號 (北部物流主線 - 雨天頻繁)」。您的『綠色經濟轉速控制』高達 93.0%！在極端天氣與高載重挑戰下，您仍為地球減碳 688.5 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 85% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "584LGFL6EX",
+    "driver_name": "李志強 (小李)",
+    "route_sector": "台 9 線 (蘇花/北宜山路段 - 彎道坡度大)",
     "total_records": 31091,
     "idling_ratio": 0.299,
     "high_rpm_ratio": 0.003,
     "heavy_load_ratio": 0.109,
     "score": 79.5,
     "grade": "C (普通)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間"
+    "legacy_rule": "怠速比例 > 20% (過高)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 李志強 (小李)",
+      "total_distance": "62182 km",
+      "co2_saved": "675.8 kg",
+      "trees_equivalent": 63,
+      "story_narrative": "這一年來，李志強 (小李) 您陪伴 HINO 車隊馳騁於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」。您的『綠色經濟轉速控制』高達 99.7%！在極端天氣與高載重挑戰下，您仍為地球減碳 675.8 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 83% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "SROHH1P6DO",
+    "driver_name": "曾品傑",
+    "route_sector": "高雄港 / 基隆港 物流園區 (排隊等候作業)",
     "total_records": 15717,
     "idling_ratio": 0.146,
     "high_rpm_ratio": 0.135,
     "heavy_load_ratio": 0.085,
     "score": 78.1,
     "grade": "C (普通)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「高雄港 / 基隆港 物流園區 (排隊等候作業)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 曾品傑",
+      "total_distance": "31434 km",
+      "co2_saved": "663.8 kg",
+      "trees_equivalent": 62,
+      "story_narrative": "這一年來，曾品傑 您陪伴 HINO 車隊馳騁於「高雄港 / 基隆港 物流園區 (排隊等候作業)」。您的『綠色經濟轉速控制』高達 86.5%！在極端天氣與高載重挑戰下，您仍為地球減碳 663.8 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 82% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "XYK9DYX172",
+    "driver_name": "江政憲",
+    "route_sector": "國道 3 號 (中南部跨區長途巡航)",
     "total_records": 14550,
     "idling_ratio": 0.162,
     "high_rpm_ratio": 0.124,
     "heavy_load_ratio": 0.142,
     "score": 77.1,
     "grade": "C (普通)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「國道 3 號 (中南部跨區長途巡航)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 江政憲",
+      "total_distance": "29100 km",
+      "co2_saved": "655.3 kg",
+      "trees_equivalent": 61,
+      "story_narrative": "這一年來，江政憲 您陪伴 HINO 車隊馳騁於「國道 3 號 (中南部跨區長途巡航)」。您的『綠色經濟轉速控制』高達 87.6%！在極端天氣與高載重挑戰下，您仍為地球減碳 655.3 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 80% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "B4TLK0X42N",
+    "driver_name": "王世傑",
+    "route_sector": "國道 1 號 (北部物流主線 - 雨天頻繁)",
     "total_records": 30192,
     "idling_ratio": 0.332,
     "high_rpm_ratio": 0.01,
     "heavy_load_ratio": 0.079,
     "score": 75.1,
     "grade": "C (普通)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間"
+    "legacy_rule": "怠速比例 > 20% (過高)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「國道 1 號 (北部物流主線 - 雨天頻繁)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 王世傑",
+      "total_distance": "60384 km",
+      "co2_saved": "638.3 kg",
+      "trees_equivalent": 60,
+      "story_narrative": "這一年來，王世傑 您陪伴 HINO 車隊馳騁於「國道 1 號 (北部物流主線 - 雨天頻繁)」。您的『綠色經濟轉速控制』高達 99.0%！在極端天氣與高載重挑戰下，您仍為地球減碳 638.3 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 78% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "DLM28P1JMF",
+    "driver_name": "鄭柏翰",
+    "route_sector": "高雄港 / 基隆港 物流園區 (排隊等候作業)",
     "total_records": 43583,
     "idling_ratio": 0.289,
     "high_rpm_ratio": 0.05,
     "heavy_load_ratio": 0.067,
     "score": 74.4,
     "grade": "C (普通)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間；轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "怠速比例 > 20% (過高)；轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「高雄港 / 基隆港 物流園區 (排隊等候作業)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 鄭柏翰",
+      "total_distance": "87166 km",
+      "co2_saved": "632.4 kg",
+      "trees_equivalent": 59,
+      "story_narrative": "這一年來，鄭柏翰 您陪伴 HINO 車隊馳騁於「高雄港 / 基隆港 物流園區 (排隊等候作業)」。您的『綠色經濟轉速控制』高達 95.0%！在極端天氣與高載重挑戰下，您仍為地球減碳 632.4 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 78% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "AHMPUL0C13",
+    "driver_name": "林國華",
+    "route_sector": "台 61 線 (西濱快速道路 - 強側風區域)",
     "total_records": 16155,
     "idling_ratio": 0.179,
     "high_rpm_ratio": 0.159,
     "heavy_load_ratio": 0.135,
     "score": 69.9,
     "grade": "D (需改善)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「台 61 線 (西濱快速道路 - 強側風區域)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 林國華",
+      "total_distance": "32310 km",
+      "co2_saved": "594.2 kg",
+      "trees_equivalent": 55,
+      "story_narrative": "這一年來，林國華 您陪伴 HINO 車隊馳騁於「台 61 線 (西濱快速道路 - 強側風區域)」。您的『綠色經濟轉速控制』高達 84.1%！在極端天氣與高載重挑戰下，您仍為地球減碳 594.2 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 73% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "C38ZBDJPHK",
+    "driver_name": "許家豪",
+    "route_sector": "台 61 線 (西濱快速道路 - 強側風區域)",
     "total_records": 21603,
     "idling_ratio": 0.134,
     "high_rpm_ratio": 0.184,
     "heavy_load_ratio": 0.172,
     "score": 69.0,
     "grade": "D (需改善)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「台 61 線 (西濱快速道路 - 強側風區域)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 許家豪",
+      "total_distance": "43206 km",
+      "co2_saved": "586.5 kg",
+      "trees_equivalent": 55,
+      "story_narrative": "這一年來，許家豪 您陪伴 HINO 車隊馳騁於「台 61 線 (西濱快速道路 - 強側風區域)」。您的『綠色經濟轉速控制』高達 81.6%！在極端天氣與高載重挑戰下，您仍為地球減碳 586.5 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 72% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "BYC608ZI24",
+    "driver_name": "吳俊宏",
+    "route_sector": "台 9 線 (蘇花/北宜山路段 - 彎道坡度大)",
     "total_records": 8005,
     "idling_ratio": 0.299,
     "high_rpm_ratio": 0.087,
     "heavy_load_ratio": 0.11,
     "score": 66.8,
     "grade": "D (需改善)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間；轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "怠速比例 > 20% (過高)；轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 吳俊宏",
+      "total_distance": "16010 km",
+      "co2_saved": "567.8 kg",
+      "trees_equivalent": 53,
+      "story_narrative": "這一年來，吳俊宏 您陪伴 HINO 車隊馳騁於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」。您的『綠色經濟轉速控制』高達 91.3%！在極端天氣與高載重挑戰下，您仍為地球減碳 567.8 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 70% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "V9R0Z0ZLT0",
+    "driver_name": "廖健安",
+    "route_sector": "台 9 線 (蘇花/北宜山路段 - 彎道坡度大)",
     "total_records": 17616,
     "idling_ratio": 0.29,
     "high_rpm_ratio": 0.13,
     "heavy_load_ratio": 0.154,
     "score": 60.6,
     "grade": "D (需改善)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間；轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "怠速比例 > 20% (過高)；轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 廖健安",
+      "total_distance": "35232 km",
+      "co2_saved": "515.1 kg",
+      "trees_equivalent": 48,
+      "story_narrative": "這一年來，廖健安 您陪伴 HINO 車隊馳騁於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」。您的『綠色經濟轉速控制』高達 87.0%！在極端天氣與高載重挑戰下，您仍為地球減碳 515.1 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 63% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "M78YOZ58I2",
+    "driver_name": "洪文雄",
+    "route_sector": "國道 3 號 (中南部跨區長途巡航)",
     "total_records": 26159,
     "idling_ratio": 0.188,
     "high_rpm_ratio": 0.231,
     "heavy_load_ratio": 0.106,
     "score": 58.7,
     "grade": "E (極度耗損)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「國道 3 號 (中南部跨區長途巡航)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 洪文雄",
+      "total_distance": "52318 km",
+      "co2_saved": "499.0 kg",
+      "trees_equivalent": 46,
+      "story_narrative": "這一年來，洪文雄 您陪伴 HINO 車隊馳騁於「國道 3 號 (中南部跨區長途巡航)」。您的『綠色經濟轉速控制』高達 76.9%！在極端天氣與高載重挑戰下，您仍為地球減碳 499.0 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 61% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "ZNUKGJO57M",
+    "driver_name": "潘威倫",
+    "route_sector": "高雄港 / 基隆港 物流園區 (排隊等候作業)",
     "total_records": 54354,
     "idling_ratio": 0.308,
     "high_rpm_ratio": 0.202,
     "heavy_load_ratio": 0.078,
     "score": 49.1,
     "grade": "E (極度耗損)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間；轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "怠速比例 > 20% (過高)；轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「高雄港 / 基隆港 物流園區 (排隊等候作業)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 潘威倫",
+      "total_distance": "108708 km",
+      "co2_saved": "417.4 kg",
+      "trees_equivalent": 39,
+      "story_narrative": "這一年來，潘威倫 您陪伴 HINO 車隊馳騁於「高雄港 / 基隆港 物流園區 (排隊等候作業)」。您的『綠色經濟轉速控制』高達 79.8%！在極端天氣與高載重挑戰下，您仍為地球減碳 417.4 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 51% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "SGQ5MOWUGY",
+    "driver_name": "郭智偉",
+    "route_sector": "台 61 線 (西濱快速道路 - 強側風區域)",
     "total_records": 14865,
     "idling_ratio": 0.131,
     "high_rpm_ratio": 0.329,
     "heavy_load_ratio": 0.125,
     "score": 48.1,
     "grade": "E (極度耗損)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「台 61 線 (西濱快速道路 - 強側風區域)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 郭智偉",
+      "total_distance": "29730 km",
+      "co2_saved": "408.9 kg",
+      "trees_equivalent": 38,
+      "story_narrative": "這一年來，郭智偉 您陪伴 HINO 車隊馳騁於「台 61 線 (西濱快速道路 - 強側風區域)」。您的『綠色經濟轉速控制』高達 67.1%！在極端天氣與高載重挑戰下，您仍為地球減碳 408.9 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 50% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "HTLT0PUOFI",
+    "driver_name": "賴志明",
+    "route_sector": "台 9 線 (蘇花/北宜山路段 - 彎道坡度大)",
     "total_records": 27505,
     "idling_ratio": 0.129,
     "high_rpm_ratio": 0.319,
     "heavy_load_ratio": 0.313,
     "score": 45.8,
     "grade": "E (極度耗損)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速；引擎經常處於高負載，請注意載重與爬坡檔位使用"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)；引擎經常 > 80% 高負載",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 賴志明",
+      "total_distance": "55010 km",
+      "co2_saved": "389.3 kg",
+      "trees_equivalent": 36,
+      "story_narrative": "這一年來，賴志明 您陪伴 HINO 車隊馳騁於「台 9 線 (蘇花/北宜山路段 - 彎道坡度大)」。您的『綠色經濟轉速控制』高達 68.1%！在極端天氣與高載重挑戰下，您仍為地球減碳 389.3 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 48% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "60LBK6GREF",
+    "driver_name": "陳明輝 (陳師傅)",
+    "route_sector": "國道 3 號 (中南部跨區長途巡航)",
     "total_records": 19072,
     "idling_ratio": 0.158,
     "high_rpm_ratio": 0.354,
     "heavy_load_ratio": 0.1,
     "score": 43.9,
     "grade": "E (極度耗損)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「國道 3 號 (中南部跨區長途巡航)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 陳明輝 (陳師傅)",
+      "total_distance": "38144 km",
+      "co2_saved": "373.1 kg",
+      "trees_equivalent": 35,
+      "story_narrative": "這一年來，陳明輝 (陳師傅) 您陪伴 HINO 車隊馳騁於「國道 3 號 (中南部跨區長途巡航)」。您的『綠色經濟轉速控制』高達 64.6%！在極端天氣與高載重挑戰下，您仍為地球減碳 373.1 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 46% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "48XAG6CMA0",
+    "driver_name": "張建國 (老張)",
+    "route_sector": "國道 1 號 (北部物流主線 - 雨天頻繁)",
     "total_records": 16546,
     "idling_ratio": 0.13,
     "high_rpm_ratio": 0.372,
     "heavy_load_ratio": 0.089,
     "score": 42.4,
     "grade": "E (極度耗損)",
-    "recommendation": "轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】拉高轉速現象 78% 集中於「國道 1 號 (北部物流主線 - 雨天頻繁)」陡坡爬升路段，且當時車輛總重達 88% 超重滿載。GenAI 推理：高轉速係為維持山路重載爬坡動能，屬『道路地形與高載重引發』而非司機個人惡意猛踩。",
+      "action": "建議防禦性教練：建議提早切換至手動低檔位維持最佳扭力區間，預計可降噪 15% 並省油 8%。",
+      "context_tags": [
+        "山路急陡坡",
+        "車輛滿載 88%",
+        "陡坡檔位切換"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 張建國 (老張)",
+      "total_distance": "33092 km",
+      "co2_saved": "360.4 kg",
+      "trees_equivalent": 33,
+      "story_narrative": "這一年來，張建國 (老張) 您陪伴 HINO 車隊馳騁於「國道 1 號 (北部物流主線 - 雨天頻繁)」。您的『綠色經濟轉速控制』高達 62.8%！在極端天氣與高載重挑戰下，您仍為地球減碳 360.4 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 44% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   },
   {
     "vehicle_id": "C1N6TWBTVB",
+    "driver_name": "蔡銘哲",
+    "route_sector": "國道 3 號 (中南部跨區長途巡航)",
     "total_records": 19119,
     "idling_ratio": 0.305,
     "high_rpm_ratio": 0.266,
     "heavy_load_ratio": 0.2,
     "score": 37.6,
     "grade": "E (極度耗損)",
-    "recommendation": "怠速比例遠超同業基準 (15%)，建議減少停車未熄火時間；轉速經常超過 1800 RPM，建議及早換檔維持綠色經濟轉速"
+    "legacy_rule": "怠速比例 > 20% (過高)；轉速 > 1800 RPM (踩踏過猛)",
+    "genai_causal_diagnosis": {
+      "reasoning": "【GenAI 多源歸因】車輛停靠於「國道 3 號 (中南部跨區長途巡航)」，分析 CAN-bus 冷鏈運轉資料發現：85% 怠速時間屬於『冷凍櫃恆溫 4°C 作業所需』。GenAI 自動將此怠速判定為必要營運怠速，排除不當扣分，化解勞資爭議。",
+      "action": "建議防禦性教練：確認排隊卸貨時可使用廠區外部接電源線，減少柴油引擎發動消耗。",
+      "context_tags": [
+        "冷鏈物流作業",
+        "外部高溫 33°C",
+        "園區排隊等候"
+      ]
+    },
+    "peak_experience_story": {
+      "title": "2026 HINO 榮譽駕駛個人故事 - 蔡銘哲",
+      "total_distance": "38238 km",
+      "co2_saved": "319.6 kg",
+      "trees_equivalent": 30,
+      "story_narrative": "這一年來，蔡銘哲 您陪伴 HINO 車隊馳騁於「國道 3 號 (中南部跨區長途巡航)」。您的『綠色經濟轉速控制』高達 73.4%！在極端天氣與高載重挑戰下，您仍為地球減碳 319.6 kg CO₂。您是 HINO 最值得信賴的安全與節能雙料大師！",
+      "growth_highlight": "節能控制指數優於全國 39% 同業司機！"
+    },
+    "copilot_dialogues": [
+      {
+        "driver_query": "為什麼我昨天在物流園區停留被記怠速？",
+        "ai_response": "【GenAI Context 調查中...】已自動調閱 CAN-bus 溫控與 GPS 紀錄：當時車輛停靠於高雄園區，冷凍庫運轉維持 4°C。GenAI 認定此為『必要冷鏈作業怠速』，已自動為您加回 +5 分評分！"
+      },
+      {
+        "driver_query": "昨天午後在國道急煞是因為前車變速！",
+        "ai_response": "【GenAI 毫米波與雷達分析】確認前車於 0.6 秒內急減速，您的應變屬防禦性安全煞車。系統已將此事件標註為『安全應變』，不計入違規駕駛扣分！"
+      }
+    ]
   }
 ];
 
@@ -205,91 +786,109 @@ const maintenanceData = [
   {
     "vehicle_id": "YP6LR2GGM2",
     "cooling_anomalies": 364,
-    "transmission_anomalies": 159
+    "transmission_anomalies": 159,
+    "ai_predictive_diagnosis": "冷卻系統異常 (364次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (159次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "ZNUKGJO57M",
     "cooling_anomalies": 271,
-    "transmission_anomalies": 11
+    "transmission_anomalies": 11,
+    "ai_predictive_diagnosis": "冷卻系統異常 (271次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (11次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "HTLT0PUOFI",
     "cooling_anomalies": 241,
-    "transmission_anomalies": 22
+    "transmission_anomalies": 22,
+    "ai_predictive_diagnosis": "冷卻系統異常 (241次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (22次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "C1N6TWBTVB",
     "cooling_anomalies": 13,
-    "transmission_anomalies": 221
+    "transmission_anomalies": 221,
+    "ai_predictive_diagnosis": "冷卻系統異常 (13次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (221次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "V9R0Z0ZLT0",
     "cooling_anomalies": 142,
-    "transmission_anomalies": 26
+    "transmission_anomalies": 26,
+    "ai_predictive_diagnosis": "冷卻系統異常 (142次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (26次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "60LBK6GREF",
     "cooling_anomalies": 0,
-    "transmission_anomalies": 84
+    "transmission_anomalies": 84,
+    "ai_predictive_diagnosis": "變速箱傳動異常 (84次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "C38ZBDJPHK",
     "cooling_anomalies": 0,
-    "transmission_anomalies": 83
+    "transmission_anomalies": 83,
+    "ai_predictive_diagnosis": "變速箱傳動異常 (83次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "584LGFL6EX",
     "cooling_anomalies": 5,
-    "transmission_anomalies": 70
+    "transmission_anomalies": 70,
+    "ai_predictive_diagnosis": "冷卻系統異常 (5次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (70次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "AHMPUL0C13",
     "cooling_anomalies": 72,
-    "transmission_anomalies": 0
+    "transmission_anomalies": 0,
+    "ai_predictive_diagnosis": "冷卻系統異常 (72次): 高速低負載但水溫>90°C，疑水泵流量下降"
   },
   {
     "vehicle_id": "BYC608ZI24",
     "cooling_anomalies": 0,
-    "transmission_anomalies": 23
+    "transmission_anomalies": 23,
+    "ai_predictive_diagnosis": "變速箱傳動異常 (23次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "SGQ5MOWUGY",
     "cooling_anomalies": 1,
-    "transmission_anomalies": 18
+    "transmission_anomalies": 18,
+    "ai_predictive_diagnosis": "冷卻系統異常 (1次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (18次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "FOH9N06KXC",
     "cooling_anomalies": 0,
-    "transmission_anomalies": 17
+    "transmission_anomalies": 17,
+    "ai_predictive_diagnosis": "變速箱傳動異常 (17次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "48XAG6CMA0",
     "cooling_anomalies": 2,
-    "transmission_anomalies": 8
+    "transmission_anomalies": 8,
+    "ai_predictive_diagnosis": "冷卻系統異常 (2次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (8次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "XYK9DYX172",
     "cooling_anomalies": 6,
-    "transmission_anomalies": 4
+    "transmission_anomalies": 4,
+    "ai_predictive_diagnosis": "冷卻系統異常 (6次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (4次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "DLM28P1JMF",
     "cooling_anomalies": 8,
-    "transmission_anomalies": 0
+    "transmission_anomalies": 0,
+    "ai_predictive_diagnosis": "冷卻系統異常 (8次): 高速低負載但水溫>90°C，疑水泵流量下降"
   },
   {
     "vehicle_id": "B4TLK0X42N",
     "cooling_anomalies": 4,
-    "transmission_anomalies": 3
+    "transmission_anomalies": 3,
+    "ai_predictive_diagnosis": "冷卻系統異常 (4次): 高速低負載但水溫>90°C，疑水泵流量下降；變速箱傳動異常 (3次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "ASQBKM1VW6",
     "cooling_anomalies": 0,
-    "transmission_anomalies": 5
+    "transmission_anomalies": 5,
+    "ai_predictive_diagnosis": "變速箱傳動異常 (5次): 低速高負載高轉速，疑離合器打滑"
   },
   {
     "vehicle_id": "TPMUFOCRKB",
     "cooling_anomalies": 0,
-    "transmission_anomalies": 3
+    "transmission_anomalies": 3,
+    "ai_predictive_diagnosis": "變速箱傳動異常 (3次): 低速高負載高轉速，疑離合器打滑"
   }
 ];
