@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HINO AI 智慧車隊戰情室 - 真實 Live Gemini RAG 車隊大腦</title>
+    <title>HINO AI 智慧車隊戰情室 - 司機個人 App 與車隊總管視角</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -47,6 +47,11 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(139, 92, 246, 0.3);
         }
+        .glass-amber {
+            background: rgba(245, 158, 11, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
         #map { height: 100%; min-height: 400px; border-radius: 0.75rem; z-index: 10; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -62,38 +67,62 @@
                 <div class="w-10 h-10 bg-gradient-to-tr from-primary to-accent rounded-lg flex items-center justify-center font-bold text-xl text-white shadow-lg">H</div>
                 <div>
                     <h1 class="text-2xl font-bold tracking-wider text-white flex items-center gap-2">
-                        HINO <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Live RAG 車隊大腦</span>
-                        <span class="text-xs bg-emerald-900/80 text-emerald-200 border border-emerald-500 px-2 py-0.5 rounded-full font-normal">100% Real Live Gemini API</span>
+                        HINO <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400" id="portalTitleText">Live RAG 車隊大腦</span>
+                        <span id="portalBadgeText" class="text-xs bg-emerald-900/80 text-emerald-200 border border-emerald-500 px-2 py-0.5 rounded-full font-normal">🏢 總管理者全覽模式</span>
                     </h1>
-                    <p class="text-xs text-gray-400">12 大規章庫 RAG 檢索 ⚡ 秒級 CAN-bus RAG 檢索 ⚡ 真實 Live LLM 生成</p>
+                    <p class="text-xs text-gray-400">12 大規章庫 RAG 檢索 ⚡ 秒級 CAN-bus 車載即時語音告警 ⚡ 真實 Live LLM 生成</p>
                 </div>
             </div>
             
-            <!-- Controls -->
-            <div class="flex flex-wrap items-center gap-4 text-sm">
-                <button onclick="openAuditLogsModal()" class="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+            <!-- Controls & Role Switcher -->
+            <div class="flex flex-wrap items-center gap-3 text-sm">
+                <!-- Role Switcher Button Group -->
+                <div class="flex items-center bg-gray-900 p-1 rounded-lg border border-purple-500/50">
+                    <button id="roleManagerBtn" onclick="switchRole('manager')" class="px-3 py-1.5 rounded-md text-xs font-bold bg-purple-600 text-white shadow flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-building-user"></i> 車隊總主管視角
+                    </button>
+                    <button id="roleDriverBtn" onclick="switchRole('driver')" class="px-3 py-1.5 rounded-md text-xs font-bold bg-gray-800 text-gray-300 hover:text-white flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-id-badge text-yellow-400"></i> 駕駛個人 App (老張-8320)
+                    </button>
+                </div>
+
+                <button onclick="triggerInCabinRealtimeAlert()" class="bg-amber-900/80 hover:bg-amber-700 text-amber-200 border border-amber-500 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-bullhorn text-yellow-400 animate-bounce"></i>
+                    <span>模擬車載即時怠速告警</span>
+                </button>
+
+                <button onclick="openAuditLogsModal()" class="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-list-check text-yellow-400"></i>
-                    <span>查看申訴審核日誌 (<span id="auditLogCountBadge">0</span> 筆)</span>
+                    <span>申訴日誌 (<span id="auditLogCountBadge">0</span> 筆)</span>
                 </button>
 
                 <div class="flex items-center gap-2">
-                    <label class="font-medium text-gray-400">匯入資料 (CSV)</label>
-                    <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-600 transition cursor-pointer bg-gray-800 rounded-full"/>
+                    <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-sm text-gray-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-600 transition cursor-pointer bg-gray-800 rounded-full"/>
                 </div>
                 
-                <div class="flex items-center gap-2 bg-gray-800 p-2 rounded-lg border border-gray-700">
-                    <label class="text-gray-400">區間</label>
-                    <input type="date" id="startDate" class="bg-gray-700 text-white rounded px-2 py-1 outline-none text-xs">
-                    <span class="text-gray-500">-</span>
-                    <input type="date" id="endDate" class="bg-gray-700 text-white rounded px-2 py-1 outline-none text-xs">
-                </div>
-                
-                <button id="analyzeBtn" class="bg-success hover:bg-emerald-600 text-white px-5 py-2 rounded-lg font-bold shadow-lg transition transform hover:scale-105 disabled:opacity-50" disabled>
-                    開始分析
+                <button id="analyzeBtn" class="bg-success hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-bold shadow transition text-xs disabled:opacity-50" disabled>
+                    分析 CSV
                 </button>
             </div>
         </div>
     </nav>
+
+    <!-- Simulated In-Cabin Real-time Push Alert Banner -->
+    <div id="inCabinAlertBanner" class="max-w-7xl mx-auto px-4 md:px-6 pt-4 hidden">
+        <div class="glass-amber rounded-xl p-3 flex items-center justify-between gap-3 text-xs md:text-sm border-l-4 border-yellow-500 animate-pulse">
+            <div class="flex items-center gap-3">
+                <span class="bg-amber-500 text-black font-black text-xs px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-volume-high"></i> 車載 Copilot 即時語音提示
+                </span>
+                <span class="text-amber-100 font-bold" id="inCabinAlertMsg">
+                    老張您好！偵測到 HINO-8320 於彰化交流道旁無效怠速已達 15 分鐘，根據 《RULE-101》 條款即將觸發扣分處分，請及時熄火引擎！
+                </span>
+            </div>
+            <button onclick="dismissInCabinAlert()" class="text-amber-300 hover:text-white font-bold text-xs bg-amber-950/80 px-2.5 py-1 rounded border border-amber-600">
+                我知道了 (關閉提示)
+            </button>
+        </div>
+    </div>
 
     <!-- RAG Architecture Banner -->
     <div class="max-w-7xl mx-auto px-4 md:px-6 pt-4">
@@ -123,11 +152,11 @@
         <!-- KPI Cards -->
         <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="glass p-4 rounded-xl border-l-4 border-primary">
-                <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">資料筆數</p>
+                <p class="text-gray-400 text-xs font-medium uppercase tracking-wider" id="kpi1-label">總資料筆數</p>
                 <p class="text-3xl font-bold text-white mt-1" id="kpi-rows">500,000</p>
             </div>
             <div class="glass p-4 rounded-xl border-l-4 border-accent">
-                <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">分析車輛數</p>
+                <p class="text-gray-400 text-xs font-medium uppercase tracking-wider" id="kpi2-label">分析車輛數</p>
                 <p class="text-3xl font-bold text-accent mt-1" id="kpi-vehicles">20</p>
             </div>
             <div class="glass p-4 rounded-xl border-l-4 border-danger">
@@ -172,7 +201,7 @@
                 <label class="text-[11px] text-purple-300 font-bold flex items-center gap-1 shrink-0">
                     <i class="fa-solid fa-id-card text-purple-400"></i> 當前申訴司機:
                 </label>
-                <select id="copilotDriverSelect" class="flex-grow bg-gray-900 text-white text-xs rounded px-2 py-1 outline-none border border-gray-700 font-bold focus:ring-1 focus:ring-purple-500">
+                <select id="copilotDriverSelect" onchange="onDriverSelectChange()" class="flex-grow bg-gray-900 text-white text-xs rounded px-2 py-1 outline-none border border-gray-700 font-bold focus:ring-1 focus:ring-purple-500">
                     <option value="HINO-8320|張建國 (老張)|國道一號縱貫線">HINO-8320 / 張建國 (老張)</option>
                     <option value="HINO-9150|陳阿明|台9線蘇花公路段">HINO-9150 / 陳阿明 (阿明)</option>
                     <option value="HINO-7730|林志強|國道三號中南部專線">HINO-7730 / 林志強 (強哥)</option>
@@ -192,7 +221,7 @@
                 <div class="flex gap-2 items-start">
                     <div class="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0">RAG</div>
                     <div class="bg-gray-800 text-gray-200 text-xs p-2.5 rounded-lg rounded-tl-none border border-gray-700">
-                        你好！我是 HINO 100% 真實 Live RAG 申訴大腦。您可以從上方切換「當前申訴司機」，點擊右上角輸入 API Key 後，**評審現場可以輸入任何隨機問題**，系統將連線 Google 官方 API 進行即時 RAG 推理！
+                        你好！我是 HINO 100% 真實 Live RAG 申訴大腦。您正在對 <strong class="text-purple-300" id="chatDriverNameLabel">HINO-8320 (張建國)</strong> 的個人行程進行申訴，輸入任何問題即可發起 RAG 雙庫審核！
                     </div>
                 </div>
             </div>
@@ -212,7 +241,7 @@
 
             <!-- Input Box -->
             <div class="flex gap-2">
-                <input type="text" id="copilotInput" placeholder="請輸入任何申訴問題 (將發送 Live 請求至 Google API)..." class="flex-grow bg-gray-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-purple-500 border border-gray-700">
+                <input type="text" id="copilotInput" placeholder="請輸入您的申訴內容 (將連線 Google API 推理)..." class="flex-grow bg-gray-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-purple-500 border border-gray-700">
                 <button onclick="sendCopilotMessage()" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow">
                     <span>發送</span> <i class="fa-solid fa-paper-plane text-[10px]"></i>
                 </button>
@@ -393,6 +422,7 @@
     </div>
 
     <script>
+        let currentRoleMode = 'manager'; // 'manager' or 'driver'
         let leaderboardMode = 'genai';
         let userGeminiApiKey = localStorage.getItem('hino_gemini_api_key') || '';
         let workingGeminiEndpoint = localStorage.getItem('hino_gemini_endpoint') || '';
@@ -409,7 +439,7 @@
             { rule_id: "RULE-204", title: "道路超速違規與速限加減速管控", category: "安全駕駛", clause: "《HINO 車隊規章》第 6 條第 3 款：車輛行駛不得超過道路法定速限。", exemption: "緊急避險情況下短暫 3 秒內超速避讓不予處分。", penalty: "國道車速 > 105 km/h 或道路超速 > 15 km/h 持續超過 10 秒，每次扣 5 分。" },
             { rule_id: "RULE-301", title: "急煞車/急減速防禦性駕駛與極端氣候避險豁免", category: "安全駕駛", clause: "《HINO 車隊規章》第 7 條第 3 款：急減速 (Event 7.0) 每次扣除 2 分。", exemption: "大雨/路面濕滑且前車 0.8 秒內急減速，認定為『防禦性避險煞車』，註銷扣分。", penalty: "晴天平路無障礙物致急煞，判定為跟車過近，維持扣分。" },
             { rule_id: "RULE-302", title: "疲勞駕駛與專注力分心監測條款 (DMS Event 12.0)", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 1 款：連續駕車 4 小時需休息 30 分鐘。", exemption: "疲勞初期主動駛入服務區休息給予自律獎勵。", penalty: "DMS 觸發疲勞分心 (Event 12.0) 達 3 次以上發出強制停靠警告。" },
-            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：保持 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
+            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：車輛應隨時保持與前車 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
             { rule_id: "RULE-401", title: "引擎冷卻水溫過高 (>90°C) 預防保養免責提示", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 2 款：機件異常應及時回廠檢修。", exemption: "平路巡航水溫飆破 90°C 屬『組件亞健康預警』非駕駛操作失誤，駕駛免責。", penalty: "水溫過高警告持續 30 分鐘未回報強行行駛需負操作責任。" },
             { rule_id: "RULE-402", title: "變速箱傳動打滑與高負載檢修特許", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 5 款：傳動系統異常檢測標準。", exemption: "低速高負載高轉速若非陡坡路段經判定為離合器打滑，免除油耗異常責任。", penalty: "離合器打滑警告後未於 500 公里內回廠，暫停長途調派。" }
         ];
@@ -749,12 +779,96 @@
             setLeaderboardMode(leaderboardMode === 'genai' ? 'rule' : 'genai');
         }
 
+        function switchRole(role) {
+            currentRoleMode = role;
+            const btnMgr = document.getElementById('roleManagerBtn');
+            const btnDrv = document.getElementById('roleDriverBtn');
+            const portalTitle = document.getElementById('portalTitleText');
+            const portalBadge = document.getElementById('portalBadgeText');
+            const driverSelect = document.getElementById('copilotDriverSelect');
+            const kpi1 = document.getElementById('kpi1-label');
+            const kpi2 = document.getElementById('kpi2-label');
+
+            if (role === 'driver') {
+                btnDrv.className = "px-3 py-1.5 rounded-md text-xs font-bold bg-purple-600 text-white shadow flex items-center gap-1.5 transition";
+                btnMgr.className = "px-3 py-1.5 rounded-md text-xs font-bold bg-gray-800 text-gray-300 hover:text-white flex items-center gap-1.5 transition";
+                portalTitle.innerText = "駕駛個人專屬 Copilot App";
+                portalBadge.innerText = "🚚 駕駛專屬視角 (張建國-8320)";
+                portalBadge.className = "text-xs bg-purple-900/90 text-purple-200 border border-purple-400 px-2 py-0.5 rounded-full font-bold";
+                
+                // Lock driver selector to Lao Zhang HINO-8320
+                driverSelect.value = "HINO-8320|張建國 (老張)|國道一號縱貫線";
+                driverSelect.disabled = true;
+                onDriverSelectChange();
+
+                kpi1.innerText = "老張個人累積資料";
+                kpi2.innerText = "配屬車輛";
+                document.getElementById('kpi-vehicles').innerText = "HINO-8320";
+
+                // Filter Map to HINO-8320 only
+                if(mapVehicleSelect) mapVehicleSelect.value = "HINO-8320";
+                renderMap("HINO-8320");
+                renderRadarChart("HINO-8320");
+            } else {
+                btnMgr.className = "px-3 py-1.5 rounded-md text-xs font-bold bg-purple-600 text-white shadow flex items-center gap-1.5 transition";
+                btnDrv.className = "px-3 py-1.5 rounded-md text-xs font-bold bg-gray-800 text-gray-300 hover:text-white flex items-center gap-1.5 transition";
+                portalTitle.innerText = "Live RAG 車隊大腦";
+                portalBadge.innerText = "🏢 總管理者全覽模式";
+                portalBadge.className = "text-xs bg-emerald-900/80 text-emerald-200 border border-emerald-500 px-2 py-0.5 rounded-full font-normal";
+                
+                driverSelect.disabled = false;
+                kpi1.innerText = "總資料筆數";
+                kpi2.innerText = "分析車輛數";
+                document.getElementById('kpi-vehicles').innerText = Object.keys(currentVStats).length || "20";
+
+                if(mapVehicleSelect) mapVehicleSelect.value = "ALL";
+                renderMap("ALL");
+            }
+        }
+
+        function triggerInCabinRealtimeAlert() {
+            const banner = document.getElementById('inCabinAlertBanner');
+            const alertMsg = document.getElementById('inCabinAlertMsg');
+            const driverSelect = document.getElementById('copilotDriverSelect');
+            const parts = driverSelect.value.split('|');
+            const vId = parts[0];
+            const dName = parts[1];
+
+            alertMsg.innerText = `${dName}您好！廣播警告：偵測到配車 ${vId} 於彰化交流道旁無效怠速已達 15 分鐘，根據《RULE-101》條款即將觸發扣分處分，請及時熄火引擎！`;
+            banner.classList.remove('hidden');
+
+            // Play synthesized voice if browser SpeechSynthesis is available
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(`${dName}您好！偵測到無效怠速已達 15 分鐘，請及時熄火引擎。`);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function dismissInCabinAlert() {
+            document.getElementById('inCabinAlertBanner').classList.add('hidden');
+        }
+
+        function onDriverSelectChange() {
+            const driverSelect = document.getElementById('copilotDriverSelect');
+            const val = driverSelect.value;
+            const parts = val.split('|');
+            const vId = parts[0];
+            const dName = parts[1];
+
+            document.getElementById('chatDriverNameLabel').innerText = `${vId} (${dName})`;
+        }
+
         function renderEcoLeaderboard() {
             const tbody = document.getElementById('ecoLeaderboardBody');
             if (!tbody || typeof ecoScoresData === 'undefined') return;
             
             let html = '';
             ecoScoresData.forEach((row, index) => {
+                // If in driver mode, highlight Lao Zhang's row only
+                const isTarget = currentRoleMode === 'driver' && row.vehicle_id === 'HINO-8320';
+                
                 let rankClass = "text-gray-400 font-bold";
                 if (index === 0) rankClass = "text-yellow-400 font-bold text-sm";
                 else if (index === 1) rankClass = "text-gray-300 font-bold text-sm";
@@ -788,11 +902,13 @@
                     `;
                 }
 
+                const rowBgClass = isTarget ? "bg-purple-950/80 border-l-4 border-purple-400 font-bold" : "hover:bg-gray-800/40 transition";
+
                 html += `
-                    <tr class="hover:bg-gray-800/40 transition">
+                    <tr class="${rowBgClass}">
                         <td class="p-3 ${rankClass}">#${index + 1}</td>
                         <td class="p-3">
-                            <div class="font-bold text-white text-xs">${row.vehicle_id}</div>
+                            <div class="font-bold text-white text-xs">${row.vehicle_id} ${isTarget ? '⭐ (您的個人車輛)' : ''}</div>
                             <div class="text-[11px] text-purple-300">${row.driver_name || 'HINO 駕駛員'}</div>
                         </td>
                         <td class="p-3 text-[11px] text-gray-400 max-w-[140px] truncate">${row.route_sector || '台灣主要幹道'}</td>
