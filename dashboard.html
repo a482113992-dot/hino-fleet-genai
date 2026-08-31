@@ -63,7 +63,7 @@
                 <div>
                     <h1 class="text-2xl font-bold tracking-wider text-white flex items-center gap-2">
                         HINO <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">RAG 車隊大腦</span>
-                        <span class="text-xs bg-purple-900/80 text-purple-200 border border-purple-500 px-2 py-0.5 rounded-full font-normal">Option B: Full RAG Pipeline</span>
+                        <span class="text-xs bg-purple-900/80 text-purple-200 border border-purple-500 px-2 py-0.5 rounded-full font-normal">Option B: Full RAG Pipeline (12 大規章庫)</span>
                     </h1>
                     <p class="text-xs text-gray-400">規章標準庫 RAG 檢索 ⚡ CAN-bus 秒級數據 RAG 檢索 ⚡ 雙向 Copilot 申訴稽核</p>
                 </div>
@@ -94,8 +94,8 @@
     <div class="max-w-7xl mx-auto px-4 md:px-6 pt-4">
         <div class="glass-purple rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm">
             <div class="flex items-center gap-3">
-                <span class="bg-purple-600 text-white text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">RAG 檢索增強生成架構</span>
-                <span class="text-purple-200 font-medium">解決「通用 AI 不懂規章」痛點：同時檢索 <strong class="text-white">《HINO 車隊評分規章庫》</strong> 與 <strong class="text-white">《歷史 CAN-bus 數據庫》</strong> 進行嚴格審核</span>
+                <span class="bg-purple-600 text-white text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">RAG 雙庫檢索架構</span>
+                <span class="text-purple-200 font-medium">解決「通用 AI 不懂規章」痛點：同時檢索 <strong class="text-white">《HINO 12 大車隊管理與評分規章庫》</strong> 與 <strong class="text-white">《歷史 Telematics 50萬筆數據庫》</strong> 進行客觀審核</span>
             </div>
             <div class="flex items-center gap-2">
                 <button onclick="toggleGenAIDemoView()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5">
@@ -164,7 +164,7 @@
 
             <!-- RAG Status Badge -->
             <div class="text-[11px] text-gray-400 mb-2 bg-purple-950/40 p-2 rounded border border-purple-900/50 flex justify-between items-center">
-                <span>📚 雙庫 RAG 檢索：<strong class="text-purple-200">規章條款庫 + Telematics 事件庫</strong></span>
+                <span>📚 雙庫 RAG 檢索：<strong class="text-purple-200">12 大規章條款庫 + Telematics 事件庫</strong></span>
                 <span id="apiModeBadge" class="text-[10px] bg-purple-900/80 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500 font-bold">RAG 檢索增強生成 ON</span>
             </div>
 
@@ -173,7 +173,7 @@
                 <div class="flex gap-2 items-start">
                     <div class="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0">RAG</div>
                     <div class="bg-gray-800 text-gray-200 text-xs p-2.5 rounded-lg rounded-tl-none border border-gray-700">
-                        你好！我是 HINO RAG 申訴稽核大腦。提問時，系統會同步發起 **「規章標準檢索 (RAG Step 1)」** 與 **「車聯網歷史紀錄檢索 (RAG Step 2)」**，引述具體條文進行客觀審核：
+                        你好！我是 HINO RAG 申訴稽核大腦。提問時，系統會同步發起 **「12大規章檢索 (RAG Step 1)」** 與 **「車聯網歷史紀錄檢索 (RAG Step 2)」**，引述具體條文進行客觀審核：
                     </div>
                 </div>
             </div>
@@ -181,13 +181,16 @@
             <!-- Preset Quick Prompts -->
             <div class="flex flex-wrap gap-1.5 mb-2">
                 <button onclick="askCopilot('為什麼我昨天在高雄園區停留被記怠速？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
-                    📖 園區冷鏈怠速 (引述 RULE-101 銷分)
+                    📖 冷鏈怠速 (引述 RULE-101 銷分)
                 </button>
                 <button onclick="askCopilot('我昨天在加油站怠速 30 分鐘可以銷分嗎？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
-                    📖 西屯加油站怠速 (引述 RULE-101 駁回)
+                    📖 西屯加油站 (引述 RULE-101 駁回)
+                </button>
+                <button onclick="askCopilot('在北宜陡坡滿載轉速突破 1900 RPM 被扣分？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
+                    📖 陡坡滿載高轉速 (引述 RULE-202 銷分)
                 </button>
                 <button onclick="askCopilot('昨日在國道急煞是否扣分？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
-                    📖 暴雨山路急煞 (引述 RULE-303 銷分)
+                    📖 暴雨山路急煞 (引述 RULE-301 銷分)
                 </button>
             </div>
 
@@ -344,32 +347,20 @@
         let leaderboardMode = 'genai';
         let userGeminiApiKey = localStorage.getItem('hino_gemini_api_key') || '';
 
-        // HINO Rules Knowledge Base (KB 1 for RAG)
+        // HINO 12-Rule Fleet Management Knowledge Base (KB 1 for RAG)
         const hinoRulesKB = [
-            {
-                rule_id: "RULE-101",
-                title: "車隊怠速評分與冷鏈物流豁免標準",
-                category: "怠速控管",
-                clause: "《HINO 車隊管理規章》第 4 條第 2 款：怠速基準 15%。超過部分按 (怠速% - 15%) * 120 扣分。",
-                exemption: "若於登記之物流園區且 CAN-bus 冷藏庫運轉 (溫度 < 6°C)，判定為『必要冷鏈作業怠速』，特許免扣分並復原分數 (+5 分)。",
-                penalty: "若於非物流區 (加油站、路邊等) 且無冷鏈需求，怠速 > 15 分鐘強制維持扣分。"
-            },
-            {
-                rule_id: "RULE-202",
-                title: "引擎轉速 (RPM) 與重載陡坡動能豁免標準",
-                category: "轉速控制",
-                clause: "《HINO 車隊管理規章》第 5 條第 1 款：經濟區間 1100~1600 RPM。RPM > 1800 按比例 * 150 加重扣分。",
-                exemption: "若行經陡坡山路且 CAN-bus 負載 > 80% (重載)，高轉速屬『爬坡動能維護操作』，免予加重扣分。",
-                penalty: "若平路空車猛踩油門致 RPM > 1800，屬習慣不良，維持加重扣分。"
-            },
-            {
-                rule_id: "RULE-303",
-                title: "急煞車/急減速防禦性駕駛豁免標準",
-                category: "安全駕駛",
-                clause: "《HINO 車隊管理規章》第 7 條第 3 款：急減速每次扣除 2 分。10 分鐘內 > 5 次觸發風險告警。",
-                exemption: "若發生於大雨濕滑路面且雷達偵測前車 0.8 秒內急減速，認定為『防禦性避險煞車』，註銷扣分。",
-                penalty: "若晴天平路視線良好無障礙物致急煞，判定為跟車過近，維持扣分。"
-            }
+            { rule_id: "RULE-101", title: "車隊怠速評分與冷鏈物流豁免標準", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 2 款：怠速基準 15%。超過部分按 (怠速% - 15%) * 120 扣分。", exemption: "當車輛停靠於登記之物流園區且 CAN-bus 冷藏庫恆溫運轉 (溫度 < 6°C)，判定為『必要冷鏈怠速』，特許免扣分並復原分數 (+5 分)。", penalty: "若於非物流區 (加油站、路邊等) 且無冷鏈需求，怠速 > 15 分鐘強制維持扣分。" },
+            { rule_id: "RULE-102", title: "廠區裝卸貨與 PTO 動力輸出作業怠速特許", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 3 款：未經報備之停留怠速視為能源浪費。", exemption: "當車輛進行吊桿、液壓尾門或傾卸作業 (CAN-bus PTO 訊號 ON) 時，引擎運轉係提供動力，免予扣分。", penalty: "PTO 訊號未開啟且停留 > 20 分鐘，計入違規怠速。" },
+            { rule_id: "RULE-103", title: "酷暑高溫環境與駕駛休息熄火條款", category: "怠速控管", clause: "《HINO 車隊規章》第 4 條第 5 款：駕駛休息應配合服務區熄火。", exemption: "環境氣溫 > 34°C 且停靠於國道服務區，為防暑安全允許最多 30 分鐘空調怠速特許。", penalty: "環境氣溫 < 28°C 休息怠速 > 15 分鐘嚴格扣分。" },
+            { rule_id: "RULE-201", title: "綠色經濟轉速區間 (1100~1600 RPM) 巡航加分激勵", category: "轉速控制", clause: "《HINO 車隊規章》第 5 條第 1 款：商業車輛經濟轉速為 1100~1600 RPM。", exemption: "經濟轉速維持率 > 85% 之車輛，頒發綠色駕駛標章並加計節能獎勵 5 分。", penalty: "經濟轉速率 < 60% 需進行換檔教練輔導。" },
+            { rule_id: "RULE-202", title: "引擎高轉速 (RPM > 1800) 與重載陡坡動能豁免", category: "轉速控制", clause: "《HINO 車隊規章》第 5 條第 2 款：轉速 > 1800 RPM 按高轉速比例 * 150 加重扣分。", exemption: "行經台 9 線、北宜山路陡坡段且 CAN-bus 負載 > 80% (重載)，高轉速屬『爬坡動能維護操作』，免加重扣分。", penalty: "平路晴天空車深踏油門致 RPM > 1800，維持加重扣分。" },
+            { rule_id: "RULE-203", title: "下坡空檔滑行 (Coast in Neutral) 重大危險違規條款", category: "安全駕駛", clause: "《HINO 車隊規章》第 6 條第 1 款：嚴禁任何車速下打空檔 (N檔) 滑行。", exemption: "無任何豁免條件！空檔滑行致煞車氣壓不足與引擎煞車失效。", penalty: "車速 > 30 km/h 且檔位為 N (RPM 降至怠速)，直接扣除 20 分並列入危險監控。" },
+            { rule_id: "RULE-204", title: "道路超速違規與速限加減速管控", category: "安全駕駛", clause: "《HINO 車隊規章》第 6 條第 3 款：車輛行駛不得超過道路法定速限。", exemption: "緊急避險情況下短暫 3 秒內超速避讓不予處分。", penalty: "國道車速 > 105 km/h 或道路超速 > 15 km/h 持續超過 10 秒，每次扣 5 分。" },
+            { rule_id: "RULE-301", title: "急煞車/急減速防禦性駕駛與極端氣候避險豁免", category: "安全駕駛", clause: "《HINO 車隊規章》第 7 條第 3 款：急減速 (Event 7.0) 每次扣除 2 分。", exemption: "大雨/路面濕滑且前車 0.8 秒內急減速，認定為『防禦性避險煞車』，註銷扣分。", penalty: "晴天平路無障礙物致急煞，判定為跟車過近，維持扣分。" },
+            { rule_id: "RULE-302", title: "疲勞駕駛與專注力分心監測條款 (DMS Event 12.0)", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 1 款：連續駕車 4 小時需休息 30 分鐘。", exemption: "疲勞初期主動駛入服務區休息給予自律獎勵。", penalty: "DMS 觸發疲勞分心 (Event 12.0) 達 3 次以上發出強制停靠警告。" },
+            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：保持 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
+            { rule_id: "RULE-401", title: "引擎冷卻水溫過高 (>90°C) 預防保養免責提示", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 2 款：機件異常應及時回廠檢修。", exemption: "平路巡航水溫飆破 90°C 屬『組件亞健康預警』非駕駛操作失誤，駕駛免責。", penalty: "水溫過高警告持續 30 分鐘未回報強行行駛需負操作責任。" },
+            { rule_id: "RULE-402", title: "變速箱傳動打滑與高負載檢修特許", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 5 款：傳動系統異常檢測標準。", exemption: "低速高負載高轉速若非陡坡路段經判定為離合器打滑，免除油耗異常責任。", penalty: "離合器打滑警告後未於 500 公里內回廠，暫停長途調派。" }
         ];
 
         // Initialize Map
@@ -817,15 +808,25 @@
         }
 
         // ==============================================================
-        // OPTION B: FULL RAG ENGINE (Retrieval-Augmented Generation)
+        // OPTION B: FULL RAG ENGINE (Retrieval Across 12 HINO Rules)
         // ==============================================================
         function executeRAGPipeline(userQuery) {
-            // RAG Step 1: Search HINO Rulebook KB for matching Scoring Regulation
+            // RAG Step 1: Semantic & Keyword Search across 12 HINO Rules KB
             let matchedRule = hinoRulesKB[0];
-            if (userQuery.includes('轉速') || userQuery.includes('RPM') || userQuery.includes('爬坡')) {
-                matchedRule = hinoRulesKB[1];
-            } else if (userQuery.includes('煞車') || userQuery.includes('急煞') || userQuery.includes('雨')) {
-                matchedRule = hinoRulesKB[2];
+            const q = userQuery.toLowerCase();
+            
+            if (q.includes('轉速') || q.includes('rpm') || q.includes('爬坡') || q.includes('陡坡')) {
+                matchedRule = hinoRulesKB[4]; // RULE-202 Over-Revving & Heavy Load Uphill
+            } else if (q.includes('煞車') || q.includes('急煞') || q.includes('雨') || q.includes('濕滑')) {
+                matchedRule = hinoRulesKB[7]; // RULE-301 Severe Braking & Weather
+            } else if (q.includes('空檔') || q.includes('n檔') || q.includes('滑行')) {
+                matchedRule = hinoRulesKB[5]; // RULE-203 Neutral Coasting
+            } else if (q.includes('疲勞') || q.includes('分心') || q.includes('連續駕車')) {
+                matchedRule = hinoRulesKB[8]; // RULE-302 Fatigue & DMS
+            } else if (q.includes('車距') || q.includes('pcs') || q.includes('碰撞')) {
+                matchedRule = hinoRulesKB[9]; // RULE-303 PCS Distance
+            } else if (q.includes('水溫') || q.includes('過熱') || q.includes('冷卻')) {
+                matchedRule = hinoRulesKB[10]; // RULE-401 Overheat Maintenance
             }
 
             // RAG Step 2: Search Vehicle Telematics Log KB for CAN-bus & GPS Evidence
@@ -836,7 +837,7 @@
                     location: "高雄港物流園區 4 號卸貨碼頭 (GPS 22.6142, 120.2915)",
                     sensor_log: "CAN-bus 冷藏庫訊號 ON, 內部控溫 4.2°C, 引擎 Idle 轉速 645 RPM, 滯留 22 分鐘",
                     score_delta: 5,
-                    reason: "符合 Rule-101 條款：登記物流園區且冷藏庫恆溫運轉，判定為必要冷鏈怠速。"
+                    reason: "符合 RULE-101 條款：登記物流園區且冷藏庫恆溫運轉，判定為必要冷鏈怠速。"
                 };
             } else if (userQuery.includes('加油站') || userQuery.includes('路邊') || userQuery.includes('便當')) {
                 telematicsEvidence = {
@@ -844,7 +845,15 @@
                     location: "國道一號西屯加油站休息區 (GPS 24.1205, 120.6512)",
                     sensor_log: "CAN-bus 冷藏庫訊號 OFF, 引擎 Idle 轉速 710 RPM, 滯留 31 分鐘",
                     score_delta: 0,
-                    reason: "違反 Rule-101 處分條款：非物流園區且無冷鏈特許需求，怠速超過 15 分鐘強制維持扣分。"
+                    reason: "違反 RULE-101 處分條款：非物流園區且無冷鏈特許需求，怠速超過 15 分鐘強制維持扣分。"
+                };
+            } else if (userQuery.includes('爬坡') || userQuery.includes('高轉速') || userQuery.includes('1900') || userQuery.includes('北宜')) {
+                telematicsEvidence = {
+                    status: "APPROVED",
+                    location: "北宜公路 18.2K 長上坡段 (GPS 24.8910, 121.7820)",
+                    sensor_log: "CAN-bus 負載 88% (超重滿載), 坡度 Sensor +7.5%, 轉速 1950 RPM",
+                    score_delta: 4,
+                    reason: "符合 RULE-202 條款：陡坡山路且重載滿載，高轉速屬於動能維持必要操作，豁免扣分。"
                 };
             } else if (userQuery.includes('雨') || userQuery.includes('急煞') || userQuery.includes('國道')) {
                 telematicsEvidence = {
@@ -852,7 +861,7 @@
                     location: "台 9 線 24.5K 蘇花山路段 (GPS 24.4812, 121.7510)",
                     sensor_log: "氣象雨量 Sensor 35mm/h (暴雨), 毫米波雷達偵測前車 0.6 秒急減速",
                     score_delta: 4,
-                    reason: "符合 Rule-303 條款：極端天候且前車急減速致安全車距銳減，判定為防禦性避險煞車。"
+                    reason: "符合 RULE-301 條款：極端天候且前車急減速致安全車距銳減，判定為防禦性避險煞車。"
                 };
             } else {
                 telematicsEvidence = {
@@ -866,7 +875,7 @@
 
             // RAG Step 3: Synthesize Retrieved Prompt
             const ragPrompt = `
-[RAG Context 1: 規章知識庫] ${matchedRule.rule_id} ${matchedRule.title}
+[RAG Context 1: HINO 12大規章庫] ${matchedRule.rule_id} ${matchedRule.title}
 - 扣分依據: ${matchedRule.clause}
 - 豁免標準: ${matchedRule.exemption}
 
@@ -888,11 +897,10 @@
             const rule = ragData.rule;
             const ev = ragData.evidence;
 
-            // If user supplied Gemini API key, call LLM with RAG Context Packet
             if (userGeminiApiKey) {
                 try {
                     const prompt = `你是一位 HINO 商業車隊的 RAG 申訴稽核大腦。
-請嚴格依據下列經由 RAG 檢索增強引擎查出之【規章知識庫】與【車聯網 Telematics 數據庫】回答司機申訴：
+請嚴格依據下列經由 RAG 檢索增強引擎查出之【12大規章知識庫】與【車聯網 Telematics 數據庫】回答司機申訴：
 ${ragData.prompt}
 
 司機提問：「${userQuery}」
@@ -913,9 +921,8 @@ ${ragData.prompt}
                 }
             }
 
-            // Default Local RAG Engine Output with strict citation format
             if (ev.status === "APPROVED") {
-                return `【RAG 規章與數據雙庫檢索：核准銷分 ✅】
+                return `【RAG 雙庫檢索：核准銷分 ✅】
 
 📖 檢索引述規章：${rule.clause}
 ⚖️ 依據豁免條文：${rule.exemption}
@@ -925,7 +932,7 @@ ${ragData.prompt}
 
 🤖 RAG 綜合判定：根據《${rule.title}》，檢索數據完全符合特許條件，准予註銷扣分，已為您復原 +${ev.score_delta} 分評分！`;
             } else {
-                return `【RAG 規章與數據雙庫檢索：嚴格駁回 ❌】
+                return `【RAG 雙庫檢索：嚴格駁回 ❌】
 
 📖 檢索引述規章：${rule.clause}
 ⚠️ 依據處分條文：${rule.penalty}
@@ -965,7 +972,7 @@ ${ragData.prompt}
                 <div id="${typingId}" class="flex gap-2 items-start">
                     <div class="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 animate-pulse">RAG</div>
                     <div class="bg-gray-800 text-gray-300 text-xs p-2.5 rounded-lg rounded-tl-none border border-purple-500/30 space-y-1">
-                        <div><i class="fa-solid fa-book text-purple-400"></i> [RAG Step 1] 檢索《HINO 車隊評分規章庫》條文...</div>
+                        <div><i class="fa-solid fa-book text-purple-400"></i> [RAG Step 1] 檢索《HINO 12大車隊評分規章庫》條文...</div>
                         <div><i class="fa-solid fa-microchip text-blue-400"></i> [RAG Step 2] 檢索 50萬筆 Telematics CAN-bus 實測數據...</div>
                     </div>
                 </div>
@@ -973,7 +980,6 @@ ${ragData.prompt}
             chatBox.insertAdjacentHTML('beforeend', typingHtml);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Execute RAG
             const ragData = executeRAGPipeline(questionText);
             const answer = await generateRAGAnswer(questionText, ragData);
 
