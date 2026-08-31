@@ -330,7 +330,7 @@
                 <i class="fa-solid fa-bolt text-yellow-400"></i> 開啟 100% 真實 Live Gemini API
             </h3>
             <p class="text-xs text-gray-300 mb-4 leading-relaxed">
-                請輸入您的 Google Gemini API Key (以 AIzaSy... 開頭)。按下儲存後，系統將<strong>現場驗證 Key 的有效性</strong>並開啟真實 API 連線！
+                請輸入您的 Google Gemini API Key (以 AIzaSy... 開頭)。按下儲存後，系統將<strong>自動探測可用之 Google Gemini 模型端點</strong>並開啟真實 API 連線！
             </p>
             <input type="password" id="geminiApiKeyInput" placeholder="貼上 AIzaSy... (Gemini API Key)" class="w-full bg-gray-800 text-white text-xs p-3 rounded-lg border border-purple-500/50 outline-none focus:ring-2 focus:ring-purple-400 mb-3">
             <div id="keyVerifyStatus" class="text-xs mb-3 hidden"></div>
@@ -347,6 +347,7 @@
     <script>
         let leaderboardMode = 'genai';
         let userGeminiApiKey = localStorage.getItem('hino_gemini_api_key') || '';
+        let workingGeminiEndpoint = localStorage.getItem('hino_gemini_endpoint') || '';
 
         // HINO 12-Rule Fleet Management Knowledge Base (KB 1 for RAG)
         const hinoRulesKB = [
@@ -885,23 +886,37 @@
             };
         }
 
+        // Multi-Endpoint Auto Discovery for Gemini API
         async function testGeminiKeyValidity(keyToTest) {
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyToTest}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
-                });
-                const d = await res.json();
-                if (d.candidates && d.candidates.length > 0) {
-                    return { success: true };
-                } else if (d.error) {
-                    return { success: false, error: d.error.message };
+            const trimmedKey = keyToTest.trim();
+            const candidateUrls = [
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${trimmedKey}`,
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${trimmedKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${trimmedKey}`
+            ];
+
+            let lastErr = "";
+            for (let url of candidateUrls) {
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] })
+                    });
+                    const d = await res.json();
+                    if (d.candidates && d.candidates.length > 0) {
+                        workingGeminiEndpoint = url;
+                        localStorage.setItem('hino_gemini_endpoint', url);
+                        return { success: true, url: url };
+                    } else if (d.error) {
+                        lastErr = d.error.message;
+                    }
+                } catch(e) {
+                    lastErr = "網路連線失敗，請檢查網路狀態";
                 }
-            } catch(e) {
-                return { success: false, error: "網路連線失敗，請檢查網路狀態" };
             }
-            return { success: false, error: "未知的 API 回應錯誤" };
+            return { success: false, error: lastErr || "未找到相容的 Gemini 模型端點" };
         }
 
         async function generateRAGAnswer(userQuery, ragData) {
@@ -911,6 +926,8 @@
             // 100% REAL LIVE GEMINI API CALL
             if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
                 const startTime = Date.now();
+                const endpoint = workingGeminiEndpoint || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${userGeminiApiKey.trim()}`;
+                
                 try {
                     const prompt = `你是一位 HINO 商業車隊的 RAG 申訴稽核大腦。
 請嚴格依據下列經由 RAG 檢索增強引擎查出之【12大規章知識庫】與【車聯網 Telematics 數據庫】回答司機申訴：
@@ -923,7 +940,7 @@ ${ragData.prompt}
 2. 必須精準引述規章條號 (${rule.rule_id}) 與 Telematics 感測器數據。
 3. 語氣具備專業權威與同理心，150 字內完成說明。`;
 
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiApiKey.trim()}`, {
+                    const res = await fetch(endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -1005,7 +1022,7 @@ ${ragData.prompt}
                 : `<span class="bg-red-900/80 text-red-200 text-[10px] px-2 py-0.5 rounded font-bold border border-red-500">RAG 判定: 依規駁回 (維持扣分)</span>`;
 
             const liveProofBadge = answerObj.isLiveApi 
-                ? `<span class="text-[9px] bg-purple-900/60 text-purple-200 px-1.5 py-0.5 rounded border border-purple-600 block mt-2 text-right">⚡ 100% Real Google Gemini 1.5 Flash 即時運算 (耗時: ${answerObj.latencyMs}ms)</span>`
+                ? `<span class="text-[9px] bg-purple-900/60 text-purple-200 px-1.5 py-0.5 rounded border border-purple-600 block mt-2 text-right">⚡ 100% Real Google Gemini API 即時運算 (耗時: ${answerObj.latencyMs}ms)</span>`
                 : `<span class="text-[9px] bg-yellow-900/60 text-yellow-200 px-1.5 py-0.5 rounded border border-yellow-600 block mt-2 text-right">⚠️ 請點右上角輸入有效的 Gemini Key 啟用 Live API</span>`;
 
             const aiHtml = `
@@ -1046,7 +1063,7 @@ ${ragData.prompt}
 
             statusElem.classList.remove('hidden');
             statusElem.className = "text-xs mb-3 text-yellow-400 flex items-center gap-1.5";
-            statusElem.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 正在連線 Google API 驗證 API Key 有效性...`;
+            statusElem.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 正在連線 Google API 探測模型端點 (gemini-2.0 / gemini-1.5)...`;
             btnElem.disabled = true;
 
             const testRes = await testGeminiKeyValidity(val);
@@ -1054,7 +1071,7 @@ ${ragData.prompt}
 
             if (testRes.success) {
                 statusElem.className = "text-xs mb-3 text-emerald-400 font-bold flex items-center gap-1.5";
-                statusElem.innerHTML = `<i class="fa-solid fa-circle-check"></i> 驗證成功！API Key 有效，正在開啟 Live RAG 引擎...`;
+                statusElem.innerHTML = `<i class="fa-solid fa-circle-check"></i> 驗證成功！相容端點通過，正在開啟 Live RAG 引擎...`;
                 
                 setTimeout(() => {
                     saveApiKey(val);
@@ -1090,7 +1107,7 @@ ${ragData.prompt}
                 badge.innerText = "100% Real Gemini API Connected";
                 badge.className = "text-[10px] bg-emerald-900/80 text-emerald-200 px-2 py-0.5 rounded border border-emerald-500 font-bold";
                 btnText.innerText = "🟢 Gemini API 已連線";
-                connStatus.innerText = "🟢 已連線至 Google Gemini 1.5 Flash (100% Real Live RAG)";
+                connStatus.innerText = "🟢 已連線至 Google Gemini API (100% Real Live RAG)";
                 connStatus.className = "text-emerald-400 font-bold";
             } else {
                 badge.innerText = "離線 RAG 硬性審核";
