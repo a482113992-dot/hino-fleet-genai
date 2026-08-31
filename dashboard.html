@@ -330,7 +330,7 @@
                 <i class="fa-solid fa-bolt text-yellow-400"></i> 開啟 100% 真實 Live Gemini API
             </h3>
             <p class="text-xs text-gray-300 mb-4 leading-relaxed">
-                請輸入您的 Google Gemini API Key (以 AIzaSy... 開頭)。按下儲存後，系統將<strong>自動探測可用之 Google Gemini 模型端點</strong>並開啟真實 API 連線！
+                請貼上您從 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-purple-400 underline font-bold">Google AI Studio</a> 複製的 API Key。按下驗證後，系統將向 Google 發起實體 ModelService 連線查詢！
             </p>
             <input type="password" id="geminiApiKeyInput" placeholder="貼上 AIzaSy... (Gemini API Key)" class="w-full bg-gray-800 text-white text-xs p-3 rounded-lg border border-purple-500/50 outline-none focus:ring-2 focus:ring-purple-400 mb-3">
             <div id="keyVerifyStatus" class="text-xs mb-3 hidden"></div>
@@ -360,7 +360,7 @@
             { rule_id: "RULE-204", title: "道路超速違規與速限加減速管控", category: "安全駕駛", clause: "《HINO 車隊規章》第 6 條第 3 款：車輛行駛不得超過道路法定速限。", exemption: "緊急避險情況下短暫 3 秒內超速避讓不予處分。", penalty: "國道車速 > 105 km/h 或道路超速 > 15 km/h 持續超過 10 秒，每次扣 5 分。" },
             { rule_id: "RULE-301", title: "急煞車/急減速防禦性駕駛與極端氣候避險豁免", category: "安全駕駛", clause: "《HINO 車隊規章》第 7 條第 3 款：急減速 (Event 7.0) 每次扣除 2 分。", exemption: "大雨/路面濕滑且前車 0.8 秒內急減速，認定為『防禦性避險煞車』，註銷扣分。", penalty: "晴天平路無障礙物致急煞，判定為跟車過近，維持扣分。" },
             { rule_id: "RULE-302", title: "疲勞駕駛與專注力分心監測條款 (DMS Event 12.0)", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 1 款：連續駕車 4 小時需休息 30 分鐘。", exemption: "疲勞初期主動駛入服務區休息給予自律獎勵。", penalty: "DMS 觸發疲勞分心 (Event 12.0) 達 3 次以上發出強制停靠警告。" },
-            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：保持 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
+            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：車輛應隨時保持與前車 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
             { rule_id: "RULE-401", title: "引擎冷卻水溫過高 (>90°C) 預防保養免責提示", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 2 款：機件異常應及時回廠檢修。", exemption: "平路巡航水溫飆破 90°C 屬『組件亞健康預警』非駕駛操作失誤，駕駛免責。", penalty: "水溫過高警告持續 30 分鐘未回報強行行駛需負操作責任。" },
             { rule_id: "RULE-402", title: "變速箱傳動打滑與高負載檢修特許", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 5 款：傳動系統異常檢測標準。", exemption: "低速高負載高轉速若非陡坡路段經判定為離合器打滑，免除油耗異常責任。", penalty: "離合器打滑警告後未於 500 公里內回廠，暫停長途調派。" }
         ];
@@ -886,37 +886,55 @@
             };
         }
 
-        // Multi-Endpoint Auto Discovery for Gemini API
+        // Call ModelService.ListModels to ask Google directly which models are available for this API Key
         async function testGeminiKeyValidity(keyToTest) {
             const trimmedKey = keyToTest.trim();
-            const candidateUrls = [
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`,
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${trimmedKey}`,
-                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${trimmedKey}`,
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${trimmedKey}`
-            ];
+            const listModelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${trimmedKey}`;
 
-            let lastErr = "";
-            for (let url of candidateUrls) {
-                try {
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] })
-                    });
-                    const d = await res.json();
-                    if (d.candidates && d.candidates.length > 0) {
-                        workingGeminiEndpoint = url;
-                        localStorage.setItem('hino_gemini_endpoint', url);
-                        return { success: true, url: url };
-                    } else if (d.error) {
-                        lastErr = d.error.message;
-                    }
-                } catch(e) {
-                    lastErr = "網路連線失敗，請檢查網路狀態";
+            try {
+                const listRes = await fetch(listModelsUrl);
+                const listData = await listRes.json();
+
+                if (listData.models && listData.models.length > 0) {
+                    // Find a model that supports generateContent
+                    const validModel = listData.models.find(m => 
+                        m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+                    ) || listData.models[0];
+
+                    const modelName = validModel.name; // e.g. "models/gemini-1.5-flash" or "models/gemini-2.0-flash"
+                    const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${trimmedKey}`;
+                    
+                    workingGeminiEndpoint = generateUrl;
+                    localStorage.setItem('hino_gemini_endpoint', generateUrl);
+                    return { success: true, modelName: modelName };
+                } else if (listData.error) {
+                    return { success: false, error: listData.error.message };
                 }
+            } catch(e) {
+                // Fallback direct probe if ListModels is restricted
+                const fallbackUrls = [
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${trimmedKey}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`
+                ];
+                for(let url of fallbackUrls) {
+                    try {
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: "hi" }] }] })
+                        });
+                        const d = await res.json();
+                        if (d.candidates && d.candidates.length > 0) {
+                            workingGeminiEndpoint = url;
+                            localStorage.setItem('hino_gemini_endpoint', url);
+                            return { success: true, modelName: "gemini" };
+                        }
+                    } catch(err) {}
+                }
+                return { success: false, error: "網路請求失敗，請檢查網路連線" };
             }
-            return { success: false, error: lastErr || "未找到相容的 Gemini 模型端點" };
+
+            return { success: false, error: "無效的 Gemini API Key，請檢查是否從 Google AI Studio 複製" };
         }
 
         async function generateRAGAnswer(userQuery, ragData) {
@@ -926,7 +944,7 @@
             // 100% REAL LIVE GEMINI API CALL
             if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
                 const startTime = Date.now();
-                const endpoint = workingGeminiEndpoint || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${userGeminiApiKey.trim()}`;
+                const endpoint = workingGeminiEndpoint || `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiApiKey.trim()}`;
                 
                 try {
                     const prompt = `你是一位 HINO 商業車隊的 RAG 申訴稽核大腦。
@@ -1063,7 +1081,7 @@ ${ragData.prompt}
 
             statusElem.classList.remove('hidden');
             statusElem.className = "text-xs mb-3 text-yellow-400 flex items-center gap-1.5";
-            statusElem.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 正在連線 Google API 探測模型端點 (gemini-2.0 / gemini-1.5)...`;
+            statusElem.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 正在向 Google ModelService 查詢可用的 Gemini 模型清單...`;
             btnElem.disabled = true;
 
             const testRes = await testGeminiKeyValidity(val);
@@ -1071,12 +1089,12 @@ ${ragData.prompt}
 
             if (testRes.success) {
                 statusElem.className = "text-xs mb-3 text-emerald-400 font-bold flex items-center gap-1.5";
-                statusElem.innerHTML = `<i class="fa-solid fa-circle-check"></i> 驗證成功！相容端點通過，正在開啟 Live RAG 引擎...`;
+                statusElem.innerHTML = `<i class="fa-solid fa-circle-check"></i> 驗證成功！連線模型: ${testRes.modelName}，正在開啟 Live RAG 引擎...`;
                 
                 setTimeout(() => {
                     saveApiKey(val);
                     statusElem.classList.add('hidden');
-                }, 600);
+                }, 700);
             } else {
                 statusElem.className = "text-xs mb-3 text-red-400 font-bold flex items-center gap-1.5 bg-red-950/60 p-2 rounded border border-red-800";
                 statusElem.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 驗證失敗：${testRes.error}`;
