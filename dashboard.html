@@ -908,7 +908,7 @@ ${ragData.prompt}
                     const d = await res.json();
                     const latency = Date.now() - startTime;
                     
-                    if (d.candidates && d.candidates[0]) {
+                    if (d.candidates && d.candidates[0] && d.candidates[0].content) {
                         const rawText = d.candidates[0].content.parts[0].text;
                         return {
                             text: rawText,
@@ -916,17 +916,26 @@ ${ragData.prompt}
                             latencyMs: latency
                         };
                     } else if (d.error) {
-                        alert("Gemini API 回傳錯誤: " + d.error.message);
+                        return {
+                            text: `❌ Gemini API 連線失敗：${d.error.message}\n\n💡 請點擊右上角「Gemini API Key」按鈕，確認貼上的 Key 是否正確 (須以 AIzaSy... 開頭)。`,
+                            isLiveApi: false,
+                            latencyMs: 0
+                        };
                     }
                 } catch(e) {
                     console.warn("Live Gemini API Call failed:", e);
+                    return {
+                        text: `❌ 網路連線失敗或 API Key 無效。請檢查網路並點擊右上角按鈕重新設定。`,
+                        isLiveApi: false,
+                        latencyMs: 0
+                    };
                 }
             }
 
-            // If API key is not set, prompt user to set key for real API
+            // Offline RAG Engine output when no API Key is set
             const statusBadge = ev.status === "APPROVED" ? "【RAG 核准銷分 ✅】" : "【RAG 嚴格駁回 ❌】";
             return {
-                text: `${statusBadge}\n(提示：尚未輸入 Gemini API Key，目前為硬性審核展示。請點擊右上角「輸入 Gemini API Key」體驗 100% Live LLM 運算)\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}`,
+                text: `${statusBadge}\n(目前為離線 RAG 硬性審核展示。點擊右上角「輸入 API Key」即可開啟 100% Live Gemini API 連線)\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}\n\n🤖 RAG 綜合結論：根據《${rule.title}》，檢索數據完全符合特許條件，准予註銷扣分，已為您復原 +${ev.score_delta} 分評分！`,
                 isLiveApi: false,
                 latencyMs: 0
             };
@@ -979,7 +988,7 @@ ${ragData.prompt}
 
             const liveProofBadge = answerObj.isLiveApi 
                 ? `<span class="text-[9px] bg-purple-900/60 text-purple-200 px-1.5 py-0.5 rounded border border-purple-600 block mt-2 text-right">⚡ 100% Real Google Gemini 1.5 Flash 即時運算 (耗時: ${answerObj.latencyMs}ms)</span>`
-                : `<span class="text-[9px] bg-yellow-900/60 text-yellow-200 px-1.5 py-0.5 rounded border border-yellow-600 block mt-2 text-right">⚠️ 請點右上角輸入 Gemini Key 啟用 Live API</span>`;
+                : `<span class="text-[9px] bg-yellow-900/60 text-yellow-200 px-1.5 py-0.5 rounded border border-yellow-600 block mt-2 text-right">⚠️ 請點右上角輸入有效的 Gemini Key 啟用 Live API</span>`;
 
             const aiHtml = `
                 <div class="flex gap-2 items-start">
@@ -1017,24 +1026,28 @@ ${ragData.prompt}
 
         function saveApiKey(keyVal) {
             userGeminiApiKey = keyVal;
-            localStorage.setItem('hino_gemini_api_key', keyVal);
+            if (keyVal) {
+                localStorage.setItem('hino_gemini_api_key', keyVal);
+            } else {
+                localStorage.removeItem('hino_gemini_api_key');
+            }
             document.getElementById('apiKeyModal').classList.add('hidden');
             
             const badge = document.getElementById('apiModeBadge');
             const btnText = document.getElementById('apiKeyBtnText');
             const connStatus = document.getElementById('apiConnStatusText');
             
-            if (keyVal) {
+            if (keyVal && keyVal.length > 10) {
                 badge.innerText = "100% Real Gemini API Connected";
                 badge.className = "text-[10px] bg-emerald-900/80 text-emerald-200 px-2 py-0.5 rounded border border-emerald-500 font-bold";
                 btnText.innerText = "🟢 Gemini API 已連線";
                 connStatus.innerText = "🟢 已連線至 Google Gemini 1.5 Flash (100% Real Live RAG)";
                 connStatus.className = "text-emerald-400 font-bold";
             } else {
-                badge.innerText = "100% Real API";
+                badge.innerText = "離線 RAG 硬性審核";
                 badge.className = "text-[10px] bg-purple-900/80 text-purple-200 px-2 py-0.5 rounded border border-purple-500 font-bold";
                 btnText.innerText = "輸入 Gemini API Key (真實連線)";
-                connStatus.innerText = "⚠️ 請輸入 Gemini API Key 以開啟 Live LLM";
+                connStatus.innerText = "⚠️ 當前為離線模式，請點右上角按鈕輸入 API Key";
                 connStatus.className = "text-yellow-400 font-bold";
             }
         }
@@ -1046,11 +1059,10 @@ ${ragData.prompt}
         window.addEventListener('DOMContentLoaded', () => {
             renderEcoLeaderboard();
             renderMaintenanceAlerts();
-            if (userGeminiApiKey) {
+            if (userGeminiApiKey && userGeminiApiKey.length > 10) {
                 saveApiKey(userGeminiApiKey);
             } else {
-                // Show modal on load to invite user to type key
-                setTimeout(() => toggleApiKeyModal(), 800);
+                saveApiKey('');
             }
         });
     </script>
