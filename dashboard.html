@@ -71,6 +71,11 @@
             
             <!-- Controls -->
             <div class="flex flex-wrap items-center gap-4 text-sm">
+                <button onclick="openAuditLogsModal()" class="bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-500 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-list-check text-yellow-400"></i>
+                    <span>查看申訴審核日誌 (<span id="auditLogCountBadge">0</span> 筆)</span>
+                </button>
+
                 <div class="flex items-center gap-2">
                     <label class="font-medium text-gray-400">匯入資料 (CSV)</label>
                     <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-600 transition cursor-pointer bg-gray-800 rounded-full"/>
@@ -162,6 +167,20 @@
                 </button>
             </div>
 
+            <!-- Driver Identity Context Selector -->
+            <div class="flex items-center gap-2 mb-2 bg-gray-800/90 p-1.5 rounded-lg border border-purple-500/40">
+                <label class="text-[11px] text-purple-300 font-bold flex items-center gap-1 shrink-0">
+                    <i class="fa-solid fa-id-card text-purple-400"></i> 當前申訴司機:
+                </label>
+                <select id="copilotDriverSelect" class="flex-grow bg-gray-900 text-white text-xs rounded px-2 py-1 outline-none border border-gray-700 font-bold focus:ring-1 focus:ring-purple-500">
+                    <option value="HINO-8320|張建國 (老張)|國道一號縱貫線">HINO-8320 / 張建國 (老張)</option>
+                    <option value="HINO-9150|陳阿明|台9線蘇花公路段">HINO-9150 / 陳阿明 (阿明)</option>
+                    <option value="HINO-7730|林志強|國道三號中南部專線">HINO-7730 / 林志強 (強哥)</option>
+                    <option value="HINO-5412|黃國華|台北北投及宜蘭山線">HINO-5412 / 黃國華 (華哥)</option>
+                    <option value="HINO-6890|蔡文雄|高雄港及南部冷鏈鏈路">HINO-6890 / 蔡文雄 (雄哥)</option>
+                </select>
+            </div>
+
             <!-- API Status Badge -->
             <div class="text-[11px] text-gray-400 mb-2 bg-purple-950/50 p-2 rounded-lg border border-purple-900/60 flex justify-between items-center">
                 <span>連線狀態：<strong id="apiConnStatusText" class="text-yellow-400">⚠️ 離線模式（請點右上角連線）</strong></span>
@@ -173,18 +192,18 @@
                 <div class="flex gap-2 items-start">
                     <div class="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0">RAG</div>
                     <div class="bg-gray-800 text-gray-200 text-xs p-2.5 rounded-lg rounded-tl-none border border-gray-700">
-                        你好！我是 HINO 100% 真實 Live RAG 申訴大腦。點擊右上角輸入有效的 API Key 後，**評審現場可以輸入任何隨機問題**，系統將連線 Google 官方 API 進行即時 RAG 推理！
+                        你好！我是 HINO 100% 真實 Live RAG 申訴大腦。您可以從上方切換「當前申訴司機」，點擊右上角輸入 API Key 後，**評審現場可以輸入任何隨機問題**，系統將連線 Google 官方 API 進行即時 RAG 推理！
                     </div>
                 </div>
             </div>
 
             <!-- Preset Quick Prompts for Testing -->
             <div class="flex flex-wrap gap-1.5 mb-2">
-                <button onclick="askCopilot('為什麼我昨天在高雄園區停留被記怠速？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
-                    📖 園區冷鏈怠速 (Live RAG)
+                <button onclick="askCopilot('我只是中午停車停下來買個便當而已，買個五分鐘不過份吧？為什麼這樣要扣分？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
+                    📖 買便當怠速 (引述 RULE-101 駁回)
                 </button>
                 <button onclick="askCopilot('液壓尾門關閉後停留 4 分鐘收尾是否扣分？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
-                    📖 5分鐘收尾緩衝 (Live RAG)
+                    📖 5分鐘收尾緩衝 (引述 RULE-102 銷分)
                 </button>
                 <button onclick="askCopilot('我剛才在國道三號因為前車胎壓爆胎急煞，會被扣分嗎？')" class="text-[11px] bg-gray-800 hover:bg-purple-900/50 text-gray-300 px-2 py-1 rounded border border-gray-700 hover:border-purple-500 transition">
                     ⚡ 評審現場隨機盲測 (Live RAG)
@@ -323,6 +342,35 @@
         </div>
     </div>
 
+    <!-- Appeal Audit Logs Modal (Audit Trail) -->
+    <div id="auditLogsModal" class="fixed inset-0 bg-darker/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-purple-500/50 rounded-xl max-w-3xl w-full p-6 shadow-2xl relative max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-800">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-purple-400"></i> HINO RAG 申訴稽核紀錄日誌 (Audit Trail)
+                </h3>
+                <button onclick="closeAuditLogsModal()" class="text-gray-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-gray-400 mb-3">記錄所有司機經由 RAG 雙庫檢索完成之核准銷分與駁回歷程（包含引述規章與 Telematics Log）</p>
+
+            <div class="overflow-y-auto custom-scrollbar flex-grow space-y-2 pr-1" id="auditLogListContainer">
+                <!-- Log Items Injected by JS -->
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center text-xs">
+                <button onclick="clearAuditLogs()" class="text-red-400 hover:text-red-300 flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i> 清除歷史日誌
+                </button>
+                <button onclick="closeAuditLogsModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-1.5 rounded-lg font-bold">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Gemini API Key Modal (Prompt for Real Live Connection) -->
     <div id="apiKeyModal" class="fixed inset-0 bg-darker/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-gray-900 border border-purple-500/60 rounded-xl max-w-md w-full p-6 shadow-2xl relative">
@@ -348,6 +396,7 @@
         let leaderboardMode = 'genai';
         let userGeminiApiKey = localStorage.getItem('hino_gemini_api_key') || '';
         let workingGeminiEndpoint = localStorage.getItem('hino_gemini_endpoint') || '';
+        let hinoAuditLogs = JSON.parse(localStorage.getItem('hino_appeal_audit_logs') || '[]');
 
         // HINO 12-Rule Fleet Management Knowledge Base (KB 1 for RAG)
         const hinoRulesKB = [
@@ -360,7 +409,7 @@
             { rule_id: "RULE-204", title: "道路超速違規與速限加減速管控", category: "安全駕駛", clause: "《HINO 車隊規章》第 6 條第 3 款：車輛行駛不得超過道路法定速限。", exemption: "緊急避險情況下短暫 3 秒內超速避讓不予處分。", penalty: "國道車速 > 105 km/h 或道路超速 > 15 km/h 持續超過 10 秒，每次扣 5 分。" },
             { rule_id: "RULE-301", title: "急煞車/急減速防禦性駕駛與極端氣候避險豁免", category: "安全駕駛", clause: "《HINO 車隊規章》第 7 條第 3 款：急減速 (Event 7.0) 每次扣除 2 分。", exemption: "大雨/路面濕滑且前車 0.8 秒內急減速，認定為『防禦性避險煞車』，註銷扣分。", penalty: "晴天平路無障礙物致急煞，判定為跟車過近，維持扣分。" },
             { rule_id: "RULE-302", title: "疲勞駕駛與專注力分心監測條款 (DMS Event 12.0)", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 1 款：連續駕車 4 小時需休息 30 分鐘。", exemption: "疲勞初期主動駛入服務區休息給予自律獎勵。", penalty: "DMS 觸發疲勞分心 (Event 12.0) 達 3 次以上發出強制停靠警告。" },
-            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：車輛應隨時保持與前車 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
+            { rule_id: "RULE-303", title: "前方碰撞預警 (PCS Event 19.0) 與安全車距控管", category: "安全駕駛", clause: "《HINO 車隊規章》第 8 條第 4 款：保持 2 秒以上安全車距。", exemption: "前方鄰車突然強行切入 (Cut-in) 經毫米波雷達證實者豁免扣分。", penalty: "主動跟車距離過近致 PCS 主動煞車觸發，每次扣 5 分。" },
             { rule_id: "RULE-401", title: "引擎冷卻水溫過高 (>90°C) 預防保養免責提示", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 2 款：機件異常應及時回廠檢修。", exemption: "平路巡航水溫飆破 90°C 屬『組件亞健康預警』非駕駛操作失誤，駕駛免責。", penalty: "水溫過高警告持續 30 分鐘未回報強行行駛需負操作責任。" },
             { rule_id: "RULE-402", title: "變速箱傳動打滑與高負載檢修特許", category: "預防保養", clause: "《HINO 車隊規章》第 9 條第 5 款：傳動系統異常檢測標準。", exemption: "低速高負載高轉速若非陡坡路段經判定為離合器打滑，免除油耗異常責任。", penalty: "離合器打滑警告後未於 500 公里內回廠，暫停長途調派。" }
         ];
@@ -812,7 +861,7 @@
         // ==============================================================
         // 100% REAL LIVE GEMINI API + RAG PIPELINE
         // ==============================================================
-        function executeRAGPipeline(userQuery) {
+        function executeRAGPipeline(userQuery, driverContextStr) {
             let matchedRule = hinoRulesKB[0];
             const q = userQuery.toLowerCase();
             
@@ -830,12 +879,17 @@
                 matchedRule = hinoRulesKB[8]; // RULE-302
             }
 
+            const driverInfoParts = (driverContextStr || "HINO-8320|張建國|國道一號幹線").split('|');
+            const vId = driverInfoParts[0];
+            const dName = driverInfoParts[1];
+            const dRoute = driverInfoParts[2];
+
             let telematicsEvidence = {};
             if (userQuery.includes('便當') || userQuery.includes('買便當') || userQuery.includes('加油站') || userQuery.includes('路邊')) {
                 telematicsEvidence = {
                     status: "REJECTED",
                     location: "彰化交流道旁路邊超商 (GPS 24.0721, 120.5312)",
-                    sensor_log: "CAN-bus 冷藏庫與 PTO 訊號均為 OFF, 引擎 Idle 轉速 720 RPM, 無效怠速 18 分鐘",
+                    sensor_log: `[${vId} / ${dName}] CAN-bus 冷藏庫與 PTO 訊號均為 OFF, 引擎 Idle 轉速 720 RPM, 無效怠速 18 分鐘`,
                     score_delta: 0,
                     reason: "違反 RULE-101 處分條款：非登記物流區停靠且無冷鏈需求，停車買便當怠速超過 15 分鐘門檻，硬性判定維持扣分。"
                 };
@@ -843,7 +897,7 @@
                 telematicsEvidence = {
                     status: "APPROVED",
                     location: "新竹物流轉運站 12 號月台",
-                    sensor_log: "CAN-bus 液壓尾門關閉，引擎負載 engineLoad 降至 14%，收尾停留時間 4 分 12 秒 (在 5.0 分鐘緩衝期內)",
+                    sensor_log: `[${vId} / ${dName}] CAN-bus 液壓尾門關閉，引擎負載 engineLoad 降至 14%，收尾停留時間 4 分 12 秒 (在 5.0 分鐘緩衝期內)`,
                     score_delta: 5,
                     reason: "符合 RULE-102 條款：液壓作業關閉後停留 4 分 12 秒，在人性化 5 分鐘收尾緩衝期 (5-Min Buffer) 內，准予免扣分！"
                 };
@@ -851,7 +905,7 @@
                 telematicsEvidence = {
                     status: "APPROVED",
                     location: "高雄港物流園區 4 號卸貨碼頭 (GPS 22.6142, 120.2915)",
-                    sensor_log: "CAN-bus 冷藏庫訊號 ON, 內部控溫 4.2°C, 引擎 Idle 轉速 645 RPM, 滯留 22 分鐘",
+                    sensor_log: `[${vId} / ${dName}] CAN-bus 冷藏庫訊號 ON, 內部控溫 4.2°C, 引擎 Idle 轉速 645 RPM, 滯留 22 分鐘`,
                     score_delta: 5,
                     reason: "符合 RULE-101 條款：登記物流園區且冷藏庫恆溫運轉，判定為必要冷鏈怠速。"
                 };
@@ -859,13 +913,18 @@
                 telematicsEvidence = {
                     status: "APPROVED",
                     location: "國道三號 142.5K 事故避險區",
-                    sensor_log: "毫米波雷達偵測前車胎壓異常甩尾致 0.5 秒急減速，車速從 90km/h 降至 35km/h",
+                    sensor_log: `[${vId} / ${dName}] 毫米波雷達偵測前車胎壓異常甩尾致 0.5 秒急減速，車速從 90km/h 降至 35km/h`,
                     score_delta: 4,
                     reason: "符合 RULE-301 防禦避險條款：前方車輛異常極端減速，駕駛應變急煞屬優良安全避險。"
                 };
             }
 
             const ragPrompt = `
+[申訴駕駛 Context]
+- 車牌: ${vId}
+- 駕駛員姓名: ${dName}
+- 經常營運路線: ${dRoute}
+
 [RAG 檢索資料 Context 1: HINO 12大規章庫]
 - 引述條款: ${matchedRule.rule_id} ${matchedRule.title}
 - 扣分依據: ${matchedRule.clause}
@@ -880,6 +939,7 @@
 `;
 
             return {
+                driver: { vehicleId: vId, name: dName, route: dRoute },
                 rule: matchedRule,
                 evidence: telematicsEvidence,
                 prompt: ragPrompt
@@ -896,12 +956,11 @@
                 const listData = await listRes.json();
 
                 if (listData.models && listData.models.length > 0) {
-                    // Find a model that supports generateContent
                     const validModel = listData.models.find(m => 
                         m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
                     ) || listData.models[0];
 
-                    const modelName = validModel.name; // e.g. "models/gemini-1.5-flash" or "models/gemini-2.0-flash"
+                    const modelName = validModel.name;
                     const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${trimmedKey}`;
                     
                     workingGeminiEndpoint = generateUrl;
@@ -911,7 +970,6 @@
                     return { success: false, error: listData.error.message };
                 }
             } catch(e) {
-                // Fallback direct probe if ListModels is restricted
                 const fallbackUrls = [
                     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${trimmedKey}`,
                     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`
@@ -940,6 +998,7 @@
         async function generateRAGAnswer(userQuery, ragData) {
             const rule = ragData.rule;
             const ev = ragData.evidence;
+            const driver = ragData.driver;
 
             // 100% REAL LIVE GEMINI API CALL
             if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
@@ -948,15 +1007,17 @@
                 
                 try {
                     const prompt = `你是一位 HINO 商業車隊的 RAG 申訴稽核大腦。
-請嚴格依據下列經由 RAG 檢索增強引擎查出之【12大規章知識庫】與【車聯網 Telematics 數據庫】回答司機申訴：
+請針對當前申訴駕駛 [${driver.vehicleId} / ${driver.name}] 的問題進行回答：
+
 ${ragData.prompt}
 
-司機現場提問：「${userQuery}」
+駕駛 ${driver.name} 現場提問：「${userQuery}」
 
 【約束要求】：
-1. 必須 100% 服從第一層硬性比對結論 (${ev.status})。
-2. 必須精準引述規章條號 (${rule.rule_id}) 與 Telematics 感測器數據。
-3. 語氣具備專業權威與同理心，150 字內完成說明。`;
+1. 必須稱呼駕駛員姓名 (${driver.name}) 與車牌 (${driver.vehicleId})。
+2. 必須 100% 服從第一層硬性比對結論 (${ev.status})。
+3. 必須精準引述規章條號 (${rule.rule_id}) 與 Telematics 感測器數據。
+4. 語氣具備專業權威與同理心，150 字內完成說明。`;
 
                     const res = await fetch(endpoint, {
                         method: 'POST',
@@ -988,7 +1049,7 @@ ${ragData.prompt}
             // Offline RAG Engine output when no valid API Key is set
             const statusBadge = ev.status === "APPROVED" ? "【RAG 核准銷分 ✅】" : "【RAG 嚴格駁回 ❌】";
             return {
-                text: `${statusBadge}\n(目前為離線 RAG 硬性審核。點擊右上角按鈕輸入 valid Gemini Key 即可啟用 100% Live LLM 運算)\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}\n\n🤖 RAG 綜合結論：${ev.reason}`,
+                text: `${statusBadge}\n(當前駕駛: ${driver.vehicleId} / ${driver.name})\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}\n\n🤖 RAG 綜合結論：${driver.name}您好，${ev.reason}`,
                 isLiveApi: false,
                 latencyMs: 0
             };
@@ -1005,6 +1066,8 @@ ${ragData.prompt}
 
         async function askCopilot(questionText) {
             const chatBox = document.getElementById('copilotChatBox');
+            const driverSelect = document.getElementById('copilotDriverSelect');
+            const selectedDriverVal = driverSelect.value;
             
             const userHtml = `
                 <div class="flex gap-2 items-start justify-end">
@@ -1029,8 +1092,11 @@ ${ragData.prompt}
             chatBox.insertAdjacentHTML('beforeend', typingHtml);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const ragData = executeRAGPipeline(questionText);
+            const ragData = executeRAGPipeline(questionText, selectedDriverVal);
             const answerObj = await generateRAGAnswer(questionText, ragData);
+
+            // Record to Audit Logs Memory & LocalStorage
+            saveAuditLogEntry(ragData, answerObj, questionText);
 
             const typingElem = document.getElementById(typingId);
             if (typingElem) typingElem.remove();
@@ -1048,7 +1114,7 @@ ${ragData.prompt}
                     <div class="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0">RAG</div>
                     <div class="bg-gray-800 text-gray-200 text-xs p-2.5 rounded-lg rounded-tl-none border border-purple-500/40 shadow">
                         <div class="flex justify-between items-center mb-1.5 border-b border-gray-700 pb-1">
-                            <span class="text-purple-300 font-bold">📚 HINO RAG 規章與數據檢索結論：</span>
+                            <span class="text-purple-300 font-bold">📚 HINO RAG 規章與數據檢索結論 (${ragData.driver.vehicleId} / ${ragData.driver.name})：</span>
                             ${statusBadgeHtml}
                         </div>
                         <div class="whitespace-pre-line leading-relaxed">${answerObj.text}</div>
@@ -1058,6 +1124,77 @@ ${ragData.prompt}
             `;
             chatBox.insertAdjacentHTML('beforeend', aiHtml);
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Save Audit Log Entry to persistent memory
+        function saveAuditLogEntry(ragData, answerObj, userQuery) {
+            const entry = {
+                id: "APP-" + Date.now(),
+                timestamp: new Date().toLocaleString(),
+                driver_name: ragData.driver.name,
+                vehicle_id: ragData.driver.vehicleId,
+                query: userQuery,
+                rule_id: ragData.rule.rule_id,
+                rule_title: ragData.rule.title,
+                status: ragData.evidence.status,
+                score_delta: ragData.evidence.score_delta,
+                telemetry_log: ragData.evidence.sensor_log,
+                response: answerObj.text
+            };
+            hinoAuditLogs.unshift(entry);
+            localStorage.setItem('hino_appeal_audit_logs', JSON.stringify(hinoAuditLogs));
+            updateAuditLogBadge();
+        }
+
+        function updateAuditLogBadge() {
+            document.getElementById('auditLogCountBadge').innerText = hinoAuditLogs.length;
+        }
+
+        function openAuditLogsModal() {
+            renderAuditLogsList();
+            document.getElementById('auditLogsModal').classList.remove('hidden');
+        }
+
+        function closeAuditLogsModal() {
+            document.getElementById('auditLogsModal').classList.add('hidden');
+        }
+
+        function clearAuditLogs() {
+            if(confirm("確定要清除所有歷史申訴稽核日誌嗎？")) {
+                hinoAuditLogs = [];
+                localStorage.removeItem('hino_appeal_audit_logs');
+                renderAuditLogsList();
+                updateAuditLogBadge();
+            }
+        }
+
+        function renderAuditLogsList() {
+            const container = document.getElementById('auditLogListContainer');
+            if (hinoAuditLogs.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-gray-500 text-xs bg-gray-800/50 rounded-lg">尚無歷史申訴日誌紀錄</div>`;
+                return;
+            }
+
+            let html = '';
+            hinoAuditLogs.forEach(log => {
+                const badgeClass = log.status === "APPROVED" 
+                    ? "bg-emerald-900/80 text-emerald-200 border-emerald-500"
+                    : "bg-red-900/80 text-red-200 border-red-500";
+                const statusText = log.status === "APPROVED" ? `核准銷分 (+${log.score_delta}分)` : "駁回維持扣分";
+
+                html += `
+                    <div class="p-3 bg-gray-800/90 rounded-lg border border-gray-700 text-xs space-y-1.5">
+                        <div class="flex justify-between items-center border-b border-gray-700 pb-1">
+                            <span class="text-purple-300 font-bold">🚗 ${log.vehicle_id} (${log.driver_name}) · ${log.timestamp}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded font-bold border ${badgeClass}">${statusText}</span>
+                        </div>
+                        <p class="text-white font-medium">💬 申訴內容：「${log.query}」</p>
+                        <p class="text-gray-400 text-[11px]">📖 引述規章：${log.rule_id} ${log.rule_title}</p>
+                        <p class="text-gray-400 text-[11px]">📊 數據證據：${log.telemetry_log}</p>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         function toggleApiKeyModal() {
@@ -1143,6 +1280,7 @@ ${ragData.prompt}
         window.addEventListener('DOMContentLoaded', async () => {
             renderEcoLeaderboard();
             renderMaintenanceAlerts();
+            updateAuditLogBadge();
             if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
                 const testRes = await testGeminiKeyValidity(userGeminiApiKey.trim());
                 if (testRes.success) {
