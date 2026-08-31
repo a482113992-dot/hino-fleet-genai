@@ -480,20 +480,22 @@
             if (!startDateInput.value) startDateInput.value = "2025-01-01";
             if (!endDateInput.value) endDateInput.value = "2025-12-31";
 
-            Papa.parse(file, {
-                header: true,
-                dynamicTyping: true,
-                skipEmptyLines: true,
-                worker: true,
-                complete: function(results) {
-                    rawData = results.data;
-                    processData();
-                },
-                error: function(err) {
-                    alert("檔案讀取錯誤: " + err.message);
-                    loadingOverlay.classList.add('hidden');
-                }
-            });
+            // Optimize PapaParse execution for instant response (removing worker block on file://)
+            setTimeout(() => {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    fastMode: false,
+                    complete: function(results) {
+                        rawData = results.data;
+                        processData();
+                    },
+                    error: function(err) {
+                        alert("檔案讀取錯誤: " + err.message);
+                        loadingOverlay.classList.add('hidden');
+                    }
+                });
+            }, 50);
         });
 
         function processData() {
@@ -538,8 +540,12 @@
 
                 vStats[vid].totalRows++;
 
-                if(row['gps.latitude'] && row['gps.longitude'] && i % mapSampleRate === 0) {
-                    globalMapPoints[vid].push([row['gps.latitude'], row['gps.longitude'], row.carStatus === 2]);
+                const lat = Number(row['gps.latitude']);
+                const lng = Number(row['gps.longitude']);
+                const carStat = Number(row.carStatus);
+
+                if(lat && lng && i % mapSampleRate === 0) {
+                    globalMapPoints[vid].push([lat, lng, carStat === 2]);
                 }
 
                 const evt = row['event[0].type'];
@@ -558,14 +564,14 @@
                     if(evtStr === '19.0' || evtStr === '12.0') riskCount++;
                 }
 
-                const load = row['can.engine.engineLoad'];
-                const rpm = row['can.engine.rpm'];
+                const load = Number(row['can.engine.engineLoad']);
+                const rpm = Number(row['can.engine.rpm']);
                 if(load > 90 && rpm > 2000) vStats[vid].highLoadCount++;
 
-                const batt = row['line.battery'];
-                if(batt && batt < 23500 && row.carStatus === 0) vStats[vid].lowBatteryCount++;
+                const batt = Number(row['line.battery']);
+                if(batt && batt < 23500 && carStat === 0) vStats[vid].lowBatteryCount++;
                 
-                if(row.carStatus === 2) vStats[vid].idlingRows++;
+                if(carStat === 2) vStats[vid].idlingRows++;
             });
 
             mapVehicleSelect.innerHTML = '<option value="ALL">全部車輛</option>';
@@ -837,7 +843,6 @@
             alertMsg.innerText = `${dName}您好！廣播警告：偵測到配車 ${vId} 於彰化交流道旁無效怠速已達 15 分鐘，根據《RULE-101》條款即將觸發扣分處分，請及時熄火引擎！`;
             banner.classList.remove('hidden');
 
-            // Play synthesized voice if browser SpeechSynthesis is available
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(`${dName}您好！偵測到無效怠速已達 15 分鐘，請及時熄火引擎。`);
                 utterance.lang = 'zh-TW';
@@ -866,7 +871,6 @@
             
             let html = '';
             ecoScoresData.forEach((row, index) => {
-                // If in driver mode, highlight Lao Zhang's row only
                 const isTarget = currentRoleMode === 'driver' && row.vehicle_id === 'HINO-8320';
                 
                 let rankClass = "text-gray-400 font-bold";
@@ -1062,7 +1066,6 @@
             };
         }
 
-        // Call ModelService.ListModels to ask Google directly which models are available for this API Key
         async function testGeminiKeyValidity(keyToTest) {
             const trimmedKey = keyToTest.trim();
             const listModelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${trimmedKey}`;
@@ -1116,7 +1119,6 @@
             const ev = ragData.evidence;
             const driver = ragData.driver;
 
-            // 100% REAL LIVE GEMINI API CALL
             if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
                 const startTime = Date.now();
                 const endpoint = workingGeminiEndpoint || `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiApiKey.trim()}`;
@@ -1162,7 +1164,6 @@ ${ragData.prompt}
                 }
             }
 
-            // Offline RAG Engine output when no valid API Key is set
             const statusBadge = ev.status === "APPROVED" ? "【RAG 核准銷分 ✅】" : "【RAG 嚴格駁回 ❌】";
             return {
                 text: `${statusBadge}\n(當前駕駛: ${driver.vehicleId} / ${driver.name})\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}\n\n🤖 RAG 綜合結論：${driver.name}您好，${ev.reason}`,
@@ -1211,7 +1212,6 @@ ${ragData.prompt}
             const ragData = executeRAGPipeline(questionText, selectedDriverVal);
             const answerObj = await generateRAGAnswer(questionText, ragData);
 
-            // Record to Audit Logs Memory & LocalStorage
             saveAuditLogEntry(ragData, answerObj, questionText);
 
             const typingElem = document.getElementById(typingId);
@@ -1242,7 +1242,6 @@ ${ragData.prompt}
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Save Audit Log Entry to persistent memory
         function saveAuditLogEntry(ragData, answerObj, userQuery) {
             const entry = {
                 id: "APP-" + Date.now(),
