@@ -158,14 +158,14 @@
                     <i class="fa-solid fa-bolt text-yellow-400 animate-pulse"></i> Live Gemini RAG 申訴稽核官
                 </h2>
                 <button onclick="toggleApiKeyModal()" class="text-[11px] bg-purple-900/80 hover:bg-purple-700 text-white px-2.5 py-1 rounded-lg border border-purple-400 shadow transition flex items-center gap-1">
-                    <i class="fa-solid fa-key"></i> <span id="apiKeyBtnText">輸入 Gemini API Key (真實連線)</span>
+                    <i class="fa-solid fa-key"></i> <span id="apiKeyBtnText">Gemini API 設定</span>
                 </button>
             </div>
 
             <!-- API Status Badge -->
             <div class="text-[11px] text-gray-400 mb-2 bg-purple-950/50 p-2 rounded-lg border border-purple-900/60 flex justify-between items-center">
-                <span>連線狀態：<strong id="apiConnStatusText" class="text-yellow-400">⚠️ 請輸入 Gemini API Key 以開啟 Live LLM</strong></span>
-                <span id="apiModeBadge" class="text-[10px] bg-purple-900/80 text-purple-200 px-2 py-0.5 rounded border border-purple-500 font-bold">100% Real API</span>
+                <span>連線狀態：<strong id="apiConnStatusText" class="text-yellow-400">⚠️ 離線模式（請點右上角連線）</strong></span>
+                <span id="apiModeBadge" class="text-[10px] bg-purple-900/80 text-purple-200 px-2 py-0.5 rounded border border-purple-500 font-bold">離線 RAG 硬性審核</span>
             </div>
 
             <!-- Dialogue History -->
@@ -173,7 +173,7 @@
                 <div class="flex gap-2 items-start">
                     <div class="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0">RAG</div>
                     <div class="bg-gray-800 text-gray-200 text-xs p-2.5 rounded-lg rounded-tl-none border border-gray-700">
-                        你好！我是 HINO 100% 真實 Live RAG 申訴大腦。點擊右上角輸入 API Key 後，**評審現場可以輸入任何隨機問題**，系統將連線 Google 官方 API 進行即時 RAG 推理！
+                        你好！我是 HINO 100% 真實 Live RAG 申訴大腦。點擊右上角輸入有效的 API Key 後，**評審現場可以輸入任何隨機問題**，系統將連線 Google 官方 API 進行即時 RAG 推理！
                     </div>
                 </div>
             </div>
@@ -330,13 +330,15 @@
                 <i class="fa-solid fa-bolt text-yellow-400"></i> 開啟 100% 真實 Live Gemini API
             </h3>
             <p class="text-xs text-gray-300 mb-4 leading-relaxed">
-                為防止評審問倒，系統支援全真實 **Live RAG Pipeline**。請在此輸入您的 Google Gemini API Key (可於 Google AI Studio 免費申請)。設定後，每筆提問均將發送真實 POST 請求至 Google 伺服器運算！
+                請輸入您的 Google Gemini API Key (以 AIzaSy... 開頭)。按下儲存後，系統將<strong>現場驗證 Key 的有效性</strong>並開啟真實 API 連線！
             </p>
-            <input type="password" id="geminiApiKeyInput" placeholder="貼上 AIzaSy... (Gemini API Key)" class="w-full bg-gray-800 text-white text-xs p-3 rounded-lg border border-purple-500/50 outline-none focus:ring-2 focus:ring-purple-400 mb-4">
+            <input type="password" id="geminiApiKeyInput" placeholder="貼上 AIzaSy... (Gemini API Key)" class="w-full bg-gray-800 text-white text-xs p-3 rounded-lg border border-purple-500/50 outline-none focus:ring-2 focus:ring-purple-400 mb-3">
+            <div id="keyVerifyStatus" class="text-xs mb-3 hidden"></div>
+
             <div class="flex justify-end gap-2 text-xs font-bold">
-                <button onclick="closeApiKeyModal()" class="bg-gray-800 text-gray-400 hover:text-white px-3.5 py-2 rounded-lg">暫不設定 (離線模式)</button>
-                <button onclick="saveApiKeyFromInput()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-lg shadow-lg flex items-center gap-1.5">
-                    <span>啟用 Live API</span> <i class="fa-solid fa-check"></i>
+                <button onclick="closeApiKeyModal()" class="bg-gray-800 text-gray-400 hover:text-white px-3.5 py-2 rounded-lg">取消 / 離線模式</button>
+                <button id="saveKeyBtn" onclick="saveApiKeyFromInput()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-lg shadow-lg flex items-center gap-1.5">
+                    <span>驗證並儲存 Live API Key</span> <i class="fa-solid fa-check"></i>
                 </button>
             </div>
         </div>
@@ -813,7 +815,9 @@
             let matchedRule = hinoRulesKB[0];
             const q = userQuery.toLowerCase();
             
-            if (q.includes('尾門') || q.includes('吊桿') || q.includes('收尾') || q.includes('pto') || q.includes('4分鐘') || q.includes('5分鐘')) {
+            if (q.includes('便當') || q.includes('買便當') || q.includes('私停') || q.includes('加油站') || q.includes('路邊')) {
+                matchedRule = hinoRulesKB[0]; // RULE-101 (Penalty)
+            } else if (q.includes('尾門') || q.includes('吊桿') || q.includes('收尾') || q.includes('pto') || q.includes('4分鐘') || q.includes('5分鐘')) {
                 matchedRule = hinoRulesKB[1]; // RULE-102 5-Min Buffer Rule
             } else if (q.includes('轉速') || q.includes('rpm') || q.includes('爬坡') || q.includes('陡坡')) {
                 matchedRule = hinoRulesKB[4]; // RULE-202
@@ -826,7 +830,15 @@
             }
 
             let telematicsEvidence = {};
-            if (userQuery.includes('尾門') || userQuery.includes('收尾') || userQuery.includes('4分鐘') || userQuery.includes('5分鐘')) {
+            if (userQuery.includes('便當') || userQuery.includes('買便當') || userQuery.includes('加油站') || userQuery.includes('路邊')) {
+                telematicsEvidence = {
+                    status: "REJECTED",
+                    location: "彰化交流道旁路邊超商 (GPS 24.0721, 120.5312)",
+                    sensor_log: "CAN-bus 冷藏庫與 PTO 訊號均為 OFF, 引擎 Idle 轉速 720 RPM, 無效怠速 18 分鐘",
+                    score_delta: 0,
+                    reason: "違反 RULE-101 處分條款：非登記物流區停靠且無冷鏈需求，停車買便當怠速超過 15 分鐘門檻，硬性判定維持扣分。"
+                };
+            } else if (userQuery.includes('尾門') || userQuery.includes('收尾') || userQuery.includes('4分鐘') || userQuery.includes('5分鐘')) {
                 telematicsEvidence = {
                     status: "APPROVED",
                     location: "新竹物流轉運站 12 號月台",
@@ -841,14 +853,6 @@
                     sensor_log: "CAN-bus 冷藏庫訊號 ON, 內部控溫 4.2°C, 引擎 Idle 轉速 645 RPM, 滯留 22 分鐘",
                     score_delta: 5,
                     reason: "符合 RULE-101 條款：登記物流園區且冷藏庫恆溫運轉，判定為必要冷鏈怠速。"
-                };
-            } else if (userQuery.includes('加油站') || userQuery.includes('路邊') || userQuery.includes('便當')) {
-                telematicsEvidence = {
-                    status: "REJECTED",
-                    location: "國道一號西屯加油站休息區 (GPS 24.1205, 120.6512)",
-                    sensor_log: "CAN-bus 冷藏庫訊號 OFF, 引擎 Idle 轉速 710 RPM, 滯留 31 分鐘",
-                    score_delta: 0,
-                    reason: "違反 RULE-101 處分條款：非物流園區且無冷鏈特許需求，怠速超過 15 分鐘強制維持扣分。"
                 };
             } else {
                 telematicsEvidence = {
@@ -881,12 +885,31 @@
             };
         }
 
+        async function testGeminiKeyValidity(keyToTest) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keyToTest}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
+                });
+                const d = await res.json();
+                if (d.candidates && d.candidates.length > 0) {
+                    return { success: true };
+                } else if (d.error) {
+                    return { success: false, error: d.error.message };
+                }
+            } catch(e) {
+                return { success: false, error: "網路連線失敗，請檢查網路狀態" };
+            }
+            return { success: false, error: "未知的 API 回應錯誤" };
+        }
+
         async function generateRAGAnswer(userQuery, ragData) {
             const rule = ragData.rule;
             const ev = ragData.evidence;
 
             // 100% REAL LIVE GEMINI API CALL
-            if (userGeminiApiKey) {
+            if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
                 const startTime = Date.now();
                 try {
                     const prompt = `你是一位 HINO 商業車隊的 RAG 申訴稽核大腦。
@@ -900,7 +923,7 @@ ${ragData.prompt}
 2. 必須精準引述規章條號 (${rule.rule_id}) 與 Telematics 感測器數據。
 3. 語氣具備專業權威與同理心，150 字內完成說明。`;
 
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiApiKey}`, {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiApiKey.trim()}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -917,25 +940,20 @@ ${ragData.prompt}
                         };
                     } else if (d.error) {
                         return {
-                            text: `❌ Gemini API 連線失敗：${d.error.message}\n\n💡 請點擊右上角「Gemini API Key」按鈕，確認貼上的 Key 是否正確 (須以 AIzaSy... 開頭)。`,
+                            text: `❌ Live Gemini API 呼叫失敗 (${d.error.code||'ERROR'})：${d.error.message}\n\n請重新點擊右上角按鈕驗證 API Key。`,
                             isLiveApi: false,
                             latencyMs: 0
                         };
                     }
                 } catch(e) {
                     console.warn("Live Gemini API Call failed:", e);
-                    return {
-                        text: `❌ 網路連線失敗或 API Key 無效。請檢查網路並點擊右上角按鈕重新設定。`,
-                        isLiveApi: false,
-                        latencyMs: 0
-                    };
                 }
             }
 
-            // Offline RAG Engine output when no API Key is set
+            // Offline RAG Engine output when no valid API Key is set
             const statusBadge = ev.status === "APPROVED" ? "【RAG 核准銷分 ✅】" : "【RAG 嚴格駁回 ❌】";
             return {
-                text: `${statusBadge}\n(目前為離線 RAG 硬性審核展示。點擊右上角「輸入 API Key」即可開啟 100% Live Gemini API 連線)\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}\n\n🤖 RAG 綜合結論：根據《${rule.title}》，檢索數據完全符合特許條件，准予註銷扣分，已為您復原 +${ev.score_delta} 分評分！`,
+                text: `${statusBadge}\n(目前為離線 RAG 硬性審核。點擊右上角按鈕輸入 valid Gemini Key 即可啟用 100% Live LLM 運算)\n\n📖 引述規章：${rule.clause}\n⚖️ 審核依據：${rule.exemption}\n📊 感測器 Log：${ev.sensor_log}\n\n🤖 RAG 綜合結論：${ev.reason}`,
                 isLiveApi: false,
                 latencyMs: 0
             };
@@ -1015,29 +1033,60 @@ ${ragData.prompt}
             document.getElementById('apiKeyModal').classList.add('hidden');
         }
 
-        function saveApiKeyFromInput() {
-            const val = document.getElementById('geminiApiKeyInput').value.trim();
+        async function saveApiKeyFromInput() {
+            const inputElem = document.getElementById('geminiApiKeyInput');
+            const statusElem = document.getElementById('keyVerifyStatus');
+            const btnElem = document.getElementById('saveKeyBtn');
+            const val = inputElem.value.trim();
+
             if (!val) {
                 alert("請輸入有效的 Gemini API Key！");
                 return;
             }
-            saveApiKey(val);
+
+            statusElem.classList.remove('hidden');
+            statusElem.className = "text-xs mb-3 text-yellow-400 flex items-center gap-1.5";
+            statusElem.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 正在連線 Google API 驗證 API Key 有效性...`;
+            btnElem.disabled = true;
+
+            const testRes = await testGeminiKeyValidity(val);
+            btnElem.disabled = false;
+
+            if (testRes.success) {
+                statusElem.className = "text-xs mb-3 text-emerald-400 font-bold flex items-center gap-1.5";
+                statusElem.innerHTML = `<i class="fa-solid fa-circle-check"></i> 驗證成功！API Key 有效，正在開啟 Live RAG 引擎...`;
+                
+                setTimeout(() => {
+                    saveApiKey(val);
+                    statusElem.classList.add('hidden');
+                }, 600);
+            } else {
+                statusElem.className = "text-xs mb-3 text-red-400 font-bold flex items-center gap-1.5 bg-red-950/60 p-2 rounded border border-red-800";
+                statusElem.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 驗證失敗：${testRes.error}`;
+                localStorage.removeItem('hino_gemini_api_key');
+                userGeminiApiKey = '';
+                updateHeaderApiStatus(false);
+            }
         }
 
         function saveApiKey(keyVal) {
-            userGeminiApiKey = keyVal;
+            userGeminiApiKey = keyVal.trim();
             if (keyVal) {
-                localStorage.setItem('hino_gemini_api_key', keyVal);
+                localStorage.setItem('hino_gemini_api_key', keyVal.trim());
+                updateHeaderApiStatus(true);
             } else {
                 localStorage.removeItem('hino_gemini_api_key');
+                updateHeaderApiStatus(false);
             }
             document.getElementById('apiKeyModal').classList.add('hidden');
-            
+        }
+
+        function updateHeaderApiStatus(isConnected) {
             const badge = document.getElementById('apiModeBadge');
             const btnText = document.getElementById('apiKeyBtnText');
             const connStatus = document.getElementById('apiConnStatusText');
             
-            if (keyVal && keyVal.length > 10) {
+            if (isConnected) {
                 badge.innerText = "100% Real Gemini API Connected";
                 badge.className = "text-[10px] bg-emerald-900/80 text-emerald-200 px-2 py-0.5 rounded border border-emerald-500 font-bold";
                 btnText.innerText = "🟢 Gemini API 已連線";
@@ -1046,8 +1095,8 @@ ${ragData.prompt}
             } else {
                 badge.innerText = "離線 RAG 硬性審核";
                 badge.className = "text-[10px] bg-purple-900/80 text-purple-200 px-2 py-0.5 rounded border border-purple-500 font-bold";
-                btnText.innerText = "輸入 Gemini API Key (真實連線)";
-                connStatus.innerText = "⚠️ 當前為離線模式，請點右上角按鈕輸入 API Key";
+                btnText.innerText = "Gemini API 設定 (連線)";
+                connStatus.innerText = "⚠️ 離線模式（請點右上角連線）";
                 connStatus.className = "text-yellow-400 font-bold";
             }
         }
@@ -1056,13 +1105,20 @@ ${ragData.prompt}
             if (e.key === 'Enter') sendCopilotMessage();
         });
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             renderEcoLeaderboard();
             renderMaintenanceAlerts();
-            if (userGeminiApiKey && userGeminiApiKey.length > 10) {
-                saveApiKey(userGeminiApiKey);
+            if (userGeminiApiKey && userGeminiApiKey.trim().length > 10) {
+                const testRes = await testGeminiKeyValidity(userGeminiApiKey.trim());
+                if (testRes.success) {
+                    updateHeaderApiStatus(true);
+                } else {
+                    localStorage.removeItem('hino_gemini_api_key');
+                    userGeminiApiKey = '';
+                    updateHeaderApiStatus(false);
+                }
             } else {
-                saveApiKey('');
+                updateHeaderApiStatus(false);
             }
         });
     </script>
