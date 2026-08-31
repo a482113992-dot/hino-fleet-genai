@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HINO AI 智慧車隊戰情室 - 簡報</title>
+    
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/dracula.min.css">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 { font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; text-transform: none; }
+        .reveal p, .reveal li { font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; }
+        .highlight { color: #ef4444; font-weight: bold; }
+        .text-blue { color: #3b82f6; }
+        .text-green { color: #10b981; }
+        .text-yellow { color: #eab308; }
+        
+        /* Flexbox Layouts */
+        .flex-row { display: flex; justify-content: space-between; gap: 20px; width: 100%; }
+        .flex-col { flex: 1; text-align: center; }
+        
+        .demo-btn { 
+            display: inline-block; padding: 15px 40px; 
+            background: linear-gradient(135deg, #ef4444, #dc2626); 
+            color: white !important; border-radius: 50px; 
+            text-decoration: none; font-weight: bold; margin-top: 30px; 
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+        .demo-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(239, 68, 68, 0.6); }
+        .reveal .controls, .reveal .progress { color: #ef4444; }
+        .box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px; border-top: 5px solid #ef4444; }
+        
+        /* Mermaid adjustments */
+        .mermaid { margin-top: 30px; background: rgba(255,255,255,0.9); padding: 20px; border-radius: 10px; }
+        .mermaid svg { max-height: 350px !important; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Slide 1: Cover -->
+            <section>
+                <div style="background: white; display: inline-block; padding: 15px 30px; border-radius: 15px; margin-bottom: 30px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Hino_Motors_logo.svg/1200px-Hino_Motors_logo.svg.png" alt="HINO Logo" style="height: 60px; margin: 0;">
+                </div>
+                <h1 style="font-size: 2.2em; margin-bottom: 20px;">智慧節能鐵三角</h1>
+                <h2 class="text-blue" style="font-size: 1.8em; margin-bottom: 30px;">AI 車隊戰情室</h2>
+                <p style="color: #9ca3af; font-size: 0.9em;"><i class="fa-solid fa-chart-pie"></i> 從數據圖表 到 <i class="fa-solid fa-lightbulb"></i> 戰略洞察</p>
+            </section>
+
+            <!-- Slide 2: Pain Points (Visualized) -->
+            <section>
+                <h2 style="margin-bottom: 40px;">⚠️ 目前車隊管理的痛點</h2>
+                <div class="flex-row">
+                    <div class="box flex-col fragment fade-up">
+                        <i class="fa-solid fa-file-excel fa-3x" style="color: #ef4444; margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 1em;">海量數據無人看</h3>
+                        <p style="font-size: 0.6em; margin: 0;">每日數十萬筆資料，看傳統 Excel 報表看到眼花，根本無法消化。</p>
+                    </div>
+                    <div class="box flex-col fragment fade-up">
+                        <i class="fa-solid fa-bell-slash fa-3x" style="color: #eab308; margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 1em;">無效警報疲勞</h3>
+                        <p style="font-size: 0.6em; margin: 0;">單次輕微急煞就發警報，狼來了效應導致管理者最終選擇無視。</p>
+                    </div>
+                    <div class="box flex-col fragment fade-up">
+                        <i class="fa-solid fa-people-arrows fa-3x" style="color: #3b82f6; margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 1em;">單向的勞資對立</h3>
+                        <p style="font-size: 0.6em; margin: 0;">油耗差全怪司機，忽略了客觀的「物流塞車」與「零件老化」因素。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 3: Solution Architecture -->
+            <section>
+                <h2>💡 我們的 AI 戰略架構</h2>
+                <p style="font-size: 0.7em; color: #9ca3af;">不再被報表綁死，用自動化過濾引擎提取價值</p>
+                <div class="mermaid">
+                    graph LR
+                        A[(iTRAQ 大數據)] -->|50萬筆資料| B{Sliding Window<br>AI 過濾引擎}
+                        B -->|消除 90% 雜訊| C(戰情 Dashboard)
+                        C -->|邏輯一| D[雷達: 危險慣犯抓漏]
+                        C -->|邏輯二| E[地圖: 怠速門牌定位]
+                        C -->|邏輯三| F[保養: 異常耗損預警]
+                        style A fill:#3b82f6,stroke:#fff,color:#fff
+                        style B fill:#ef4444,stroke:#fff,color:#fff
+                        style C fill:#10b981,stroke:#fff,color:#fff
+                </div>
+            </section>
+
+            <!-- Slide 4: Logic 1 Diagram -->
+            <section>
+                <h2 class="text-blue">邏輯一：駕駛風險雷達</h2>
+                <p style="font-size: 0.7em; color: #9ca3af;">核心演算法：10 分鐘滑動時間窗 (Sliding Window)</p>
+                <div class="mermaid">
+                    graph TD
+                        subgraph 傳統系統 (狼來了)
+                            A1[單次急煞] --> B1[發布警報 ❌]
+                            A2[單次急煞] --> B2[發布警報 ❌]
+                        end
+                        subgraph 我們的 AI 系統
+                            C1[一整年偶發 20 次急煞] --> D1[判定為安全駕駛 ✅]
+                            C2[短短 10 分鐘內] --> C3[連續發生 5 次急煞]
+                            C3 --> D2[🔥 鎖定高風險，列出精確違規時間]
+                        end
+                        style D2 fill:#ef4444,stroke:#fff,color:#fff
+                </div>
+            </section>
+
+            <!-- Slide 5: Logic 2 Diagram -->
+            <section>
+                <h2 class="text-yellow">邏輯二：怠速地圖與反查</h2>
+                <p style="font-size: 0.7em; color: #9ca3af;">視覺化呈現物流瓶頸，從「罵司機」轉為「協助司機」</p>
+                <div class="mermaid">
+                    sequenceDiagram
+                        participant U as 戰情調度員
+                        participant M as Dashboard 地圖
+                        participant A as OpenStreetMap API
+                        U->>M: 發現異常聚集紅點，點擊該點 (Lat, Lng)
+                        M->>A: 自動呼叫反向地理編碼 (Reverse Geocoding)
+                        A-->>M: 回傳真實地理位置
+                        M-->>U: 顯示：「台北市XX路100號 異常怠速」
+                </div>
+            </section>
+
+            <!-- Slide 6: Logic 3 Diagram -->
+            <section>
+                <h2 class="text-green" style="margin-bottom: 40px;">邏輯三：預防保養預警</h2>
+                <p style="font-size: 0.7em; color: #9ca3af; margin-bottom: 30px;">透過大數據特徵比對，在車輛拋錨前防患未然</p>
+                <div class="flex-row">
+                    <div class="box flex-col" style="border-top-color: #10b981;">
+                        <i class="fa-solid fa-gears fa-3x" style="color: #10b981; margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 1.1em;">變速箱異常預警</h3>
+                        <p style="font-size: 0.7em;"><code>Engine Load > 90%</code><br>➕<br><code>RPM > 2000</code><br>👇<br><b class="text-green">提早檢修傳動系統</b></p>
+                    </div>
+                    <div class="box flex-col" style="border-top-color: #eab308;">
+                        <i class="fa-solid fa-car-battery fa-3x" style="color: #eab308; margin-bottom: 15px;"></i>
+                        <h3 style="font-size: 1.1em;">發電機/電瓶重拖</h3>
+                        <p style="font-size: 0.7em;">引擎未發動<br>➕<br><code>電壓 < 23.5V</code><br>👇<br><b class="text-yellow">預防性更換電瓶</b></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 7: AI Model Standards -->
+            <section>
+                <h2 style="margin-bottom: 30px;"><i class="fa-solid fa-scale-balanced text-yellow"></i> AI 評分模型權威依據</h2>
+                <p style="font-size: 0.7em; color: #9ca3af; margin-bottom: 40px;">捨棄不切實際的絕對標準，導入全球車隊公認的落地指標</p>
+                
+                <div class="flex-row">
+                    <div class="box flex-col">
+                        <h3 class="text-blue" style="font-size: 1.1em; margin-bottom: 10px;">FMS 車隊聯盟</h3>
+                        <p style="font-size: 0.7em; text-align: left;">
+                            <span class="highlight">1800 RPM 超轉紅線</span><br>
+                            依據歐洲七大商用車廠 (Volvo, Scania 等) 制定的標準，商用柴油車超過 1800 轉即進入無效燃燒與高耗損區間。
+                        </p>
+                    </div>
+                    <div class="box flex-col">
+                        <h3 class="text-green" style="font-size: 1.1em; margin-bottom: 10px;">NACFE & EPA</h3>
+                        <p style="font-size: 0.7em; text-align: left;">
+                            <span class="highlight">15% 容許怠速基準</span><br>
+                            北美貨運能效委員會指出，物流車的基礎怠速為 10-15%。AI 只針對「超標」開罰，貼近真實營運。
+                        </p>
+                    </div>
+                    <div class="box flex-col">
+                        <h3 class="text-yellow" style="font-size: 1.1em; margin-bottom: 10px;">Geotab / Samsara</h3>
+                        <p style="font-size: 0.7em; text-align: left;">
+                            <span class="highlight">常態分佈調校</span><br>
+                            參考全球頂尖 IoT 車隊管理系統的 Peer Benchmarking 邏輯，篩選出真正落後於「同業平均值」的高風險司機。
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 8: Value & Demo -->
+            <section>
+                <h2 style="margin-bottom: 40px;">🚀 商業價值與影響力</h2>
+                <ul style="font-size: 0.8em; line-height: 1.8; margin-bottom: 30px; text-align: left; display: inline-block;">
+                    <li class="fragment"><i class="fa-solid fa-cloud text-blue"></i> 賦予 iTRAQ 靈魂，幫助 HINO <b>從「賣車」轉型「SaaS 服務」</b>。</li>
+                    <li class="fragment"><i class="fa-solid fa-leaf text-green"></i> 精準糾正高風險行為與主動維護車況，落實 <b>ESG 節能減碳</b>。</li>
+                    <li class="fragment"><i class="fa-solid fa-handshake text-yellow"></i> 讓 HINO 成為車隊與司機之間最客觀的<b>第三方智慧夥伴</b>。</li>
+                </ul>
+                <div class="fragment mt-10">
+                    <p style="font-size: 0.6em; color: #9ca3af; margin-bottom: 10px;">準備好體驗真正的數據力量了嗎？</p>
+                    <a href="dashboard.html" target="_blank" class="demo-btn"><i class="fa-solid fa-play"></i> 啟動 AI 戰情室 (Live Demo)</a>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script>
+        // Initialize Reveal.js
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            slideNumber: 'c/t',
+            controls: true,
+            progress: true,
+            center: true
+        });
+
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e5e7eb',
+                primaryTextColor: '#1f2937',
+                primaryBorderColor: '#9ca3af',
+                lineColor: '#6b7280',
+                secondaryColor: '#f3f4f6',
+                tertiaryColor: '#ffffff'
+            }
+        });
+    </script>
+</body>
+</html>

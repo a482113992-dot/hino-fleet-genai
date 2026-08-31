@@ -1,0 +1,202 @@
+[
+  {
+    "vehicle_id": "SROHH1P6DO",
+    "total_records": 15717,
+    "idling_ratio": 0.146,
+    "high_rpm_ratio": 0.052,
+    "heavy_load_ratio": 0.085,
+    "score": 63.5,
+    "grade": "D (需改善)",
+    "recommendation": "經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "ASQBKM1VW6",
+    "total_records": 20000,
+    "idling_ratio": 0.161,
+    "high_rpm_ratio": 0.025,
+    "heavy_load_ratio": 0.164,
+    "score": 62.6,
+    "grade": "D (需改善)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "FOH9N06KXC",
+    "total_records": 18087,
+    "idling_ratio": 0.174,
+    "high_rpm_ratio": 0.029,
+    "heavy_load_ratio": 0.131,
+    "score": 61.6,
+    "grade": "D (需改善)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "TPMUFOCRKB",
+    "total_records": 11734,
+    "idling_ratio": 0.202,
+    "high_rpm_ratio": 0.031,
+    "heavy_load_ratio": 0.112,
+    "score": 57.9,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "YP6LR2GGM2",
+    "total_records": 67754,
+    "idling_ratio": 0.222,
+    "high_rpm_ratio": 0.006,
+    "heavy_load_ratio": 0.158,
+    "score": 57.7,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "XYK9DYX172",
+    "total_records": 14550,
+    "idling_ratio": 0.162,
+    "high_rpm_ratio": 0.089,
+    "heavy_load_ratio": 0.142,
+    "score": 50.9,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間；經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "DLM28P1JMF",
+    "total_records": 43583,
+    "idling_ratio": 0.289,
+    "high_rpm_ratio": 0.014,
+    "heavy_load_ratio": 0.067,
+    "score": 50.3,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "584LGFL6EX",
+    "total_records": 31091,
+    "idling_ratio": 0.299,
+    "high_rpm_ratio": 0.001,
+    "heavy_load_ratio": 0.109,
+    "score": 49.6,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "ZNUKGJO57M",
+    "total_records": 54354,
+    "idling_ratio": 0.308,
+    "high_rpm_ratio": 0.001,
+    "heavy_load_ratio": 0.078,
+    "score": 49.6,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "V9R0Z0ZLT0",
+    "total_records": 17616,
+    "idling_ratio": 0.29,
+    "high_rpm_ratio": 0.008,
+    "heavy_load_ratio": 0.154,
+    "score": 47.3,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "C38ZBDJPHK",
+    "total_records": 21603,
+    "idling_ratio": 0.134,
+    "high_rpm_ratio": 0.124,
+    "heavy_load_ratio": 0.172,
+    "score": 46.5,
+    "grade": "E (極度耗損)",
+    "recommendation": "經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "B4TLK0X42N",
+    "total_records": 30192,
+    "idling_ratio": 0.332,
+    "high_rpm_ratio": 0.001,
+    "heavy_load_ratio": 0.079,
+    "score": 46.1,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間"
+  },
+  {
+    "vehicle_id": "AHMPUL0C13",
+    "total_records": 16155,
+    "idling_ratio": 0.179,
+    "high_rpm_ratio": 0.102,
+    "heavy_load_ratio": 0.135,
+    "score": 46.0,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間；經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "BYC608ZI24",
+    "total_records": 8005,
+    "idling_ratio": 0.299,
+    "high_rpm_ratio": 0.061,
+    "heavy_load_ratio": 0.11,
+    "score": 37.5,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間；經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "M78YOZ58I2",
+    "total_records": 26159,
+    "idling_ratio": 0.188,
+    "high_rpm_ratio": 0.156,
+    "heavy_load_ratio": 0.106,
+    "score": 35.4,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間；經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "SGQ5MOWUGY",
+    "total_records": 14865,
+    "idling_ratio": 0.131,
+    "high_rpm_ratio": 0.213,
+    "heavy_load_ratio": 0.125,
+    "score": 31.4,
+    "grade": "E (極度耗損)",
+    "recommendation": "經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "HTLT0PUOFI",
+    "total_records": 27505,
+    "idling_ratio": 0.129,
+    "high_rpm_ratio": 0.197,
+    "heavy_load_ratio": 0.313,
+    "score": 25.5,
+    "grade": "E (極度耗損)",
+    "recommendation": "經常處於高轉速，建議及早換檔避免重拖；引擎經常處於高負載，請注意載重與爬坡檔位使用"
+  },
+  {
+    "vehicle_id": "48XAG6CMA0",
+    "total_records": 16546,
+    "idling_ratio": 0.13,
+    "high_rpm_ratio": 0.265,
+    "heavy_load_ratio": 0.089,
+    "score": 23.1,
+    "grade": "E (極度耗損)",
+    "recommendation": "經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "60LBK6GREF",
+    "total_records": 19072,
+    "idling_ratio": 0.158,
+    "high_rpm_ratio": 0.266,
+    "heavy_load_ratio": 0.1,
+    "score": 18.0,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間；經常處於高轉速，建議及早換檔避免重拖"
+  },
+  {
+    "vehicle_id": "C1N6TWBTVB",
+    "total_records": 19119,
+    "idling_ratio": 0.305,
+    "high_rpm_ratio": 0.186,
+    "heavy_load_ratio": 0.2,
+    "score": 7.2,
+    "grade": "E (極度耗損)",
+    "recommendation": "怠速比例偏高，建議減少停車未熄火時間；經常處於高轉速，建議及早換檔避免重拖"
+  }
+]

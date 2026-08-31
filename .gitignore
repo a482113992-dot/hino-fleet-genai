@@ -1,0 +1,8 @@
+# Ignore large dataset files exceeding GitHub 100MB limit
+*.xlsx
+
+# Python & OS temporary files
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/

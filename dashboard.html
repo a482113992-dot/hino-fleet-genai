@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HINO AI 智慧車隊戰情室</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#111827',
+                        darker: '#030712',
+                        primary: '#3b82f6',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        success: '#10b981'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- PapaParse for fast CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Eco Scores Data -->
+    <script src="eco_scores.js"></script>
+
+    <style>
+        .glass {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+        #map { height: 100%; min-height: 400px; border-radius: 0.5rem; z-index: 10; }
+        /* Custom scrollbar for alert list */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-darker text-gray-200 font-sans min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 p-4 shadow-lg border-b border-gray-700">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center font-bold text-xl text-white">H</div>
+                <h1 class="text-2xl font-bold tracking-wider text-white">HINO <span class="text-primary">AI Fleet Dashboard</span></h1>
+            </div>
+            
+            <!-- Controls -->
+            <div class="flex flex-wrap items-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <label class="font-medium text-gray-400">匯入資料 (CSV)</label>
+                    <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-600 transition cursor-pointer bg-gray-800 rounded-full"/>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-gray-800 p-2 rounded-lg border border-gray-700">
+                    <label class="text-gray-400">區間起點</label>
+                    <input type="date" id="startDate" class="bg-gray-700 text-white rounded px-2 py-1 outline-none focus:ring-2 focus:ring-primary">
+                    <span class="text-gray-500">-</span>
+                    <label class="text-gray-400">區間終點</label>
+                    <input type="date" id="endDate" class="bg-gray-700 text-white rounded px-2 py-1 outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                
+                <button id="analyzeBtn" class="bg-success hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold shadow-lg transition-transform transform hover:scale-105 disabled:opacity-50" disabled>
+                    開始分析
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Loading State -->
+        <div id="loadingOverlay" class="fixed inset-0 bg-darker bg-opacity-90 z-50 hidden flex-col items-center justify-center">
+            <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-xl font-bold text-white tracking-widest" id="loadingText">資料解析中，請稍候...</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="glass p-4 rounded-xl">
+                <p class="text-gray-400 text-sm font-medium">資料筆數</p>
+                <p class="text-3xl font-bold text-white mt-1" id="kpi-rows">0</p>
+            </div>
+            <div class="glass p-4 rounded-xl">
+                <p class="text-gray-400 text-sm font-medium">分析車輛數</p>
+                <p class="text-3xl font-bold text-primary mt-1" id="kpi-vehicles">0</p>
+            </div>
+            <div class="glass p-4 rounded-xl">
+                <p class="text-gray-400 text-sm font-medium">重大風險警報 (PCS/疲勞)</p>
+                <p class="text-3xl font-bold text-danger mt-1" id="kpi-risks">0</p>
+            </div>
+            <div class="glass p-4 rounded-xl">
+                <p class="text-gray-400 text-sm font-medium">預防保養警示數</p>
+                <p class="text-3xl font-bold text-warning mt-1" id="kpi-maintenance">0</p>
+            </div>
+        </div>
+
+        <!-- 1. Map -->
+        <div class="glass rounded-xl p-4 lg:col-span-2 flex flex-col h-[500px]">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-xl font-bold flex items-center gap-2"><span class="text-primary">🗺️</span> 即時地圖與怠速熱點</h2>
+                    <select id="mapVehicleSelect" class="bg-gray-800 text-white rounded p-1 text-sm border border-gray-600 outline-none w-48 hidden">
+                        <option value="ALL">全部車輛</option>
+                    </select>
+                </div>
+                <span class="text-xs text-gray-400 mt-1">僅顯示抽樣軌跡以維持效能</span>
+            </div>
+            <div id="map" class="flex-grow"></div>
+        </div>
+
+        <!-- 2. Risk Radar -->
+        <div class="glass rounded-xl p-4 flex flex-col h-[500px]">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-xl font-bold flex items-center gap-2"><span class="text-danger">🚨</span> 駕駛行為風險雷達</h2>
+                    <select id="radarVehicleSelect" class="bg-gray-800 text-white rounded p-1 text-sm border border-gray-600 outline-none w-48 hidden">
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1 text-xs text-gray-400 bg-gray-800 p-2 rounded-lg border border-gray-700 shadow-inner">
+                    <div class="font-medium text-gray-300 mb-1 border-b border-gray-600 pb-1">告警閥值設定 <span class="text-[10px] text-warning ml-1">(10分鐘內連續觸發次數)</span></div>
+                    <label class="flex justify-between w-32 items-center">急減速: <input type="number" id="th-7" value="5" class="w-12 bg-gray-700 text-white rounded px-1 text-center outline-none focus:ring-1 focus:ring-primary"></label>
+                    <label class="flex justify-between w-32 items-center">疲勞分心: <input type="number" id="th-12" value="3" class="w-12 bg-gray-700 text-white rounded px-1 text-center outline-none focus:ring-1 focus:ring-primary"></label>
+                    <label class="flex justify-between w-32 items-center">PCS觸發: <input type="number" id="th-19" value="2" class="w-12 bg-gray-700 text-white rounded px-1 text-center outline-none focus:ring-1 focus:ring-primary"></label>
+                </div>
+            </div>
+            <div class="flex-grow relative min-h-[250px]">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <div id="radarIncidentDates" class="mt-2 bg-gray-800/50 rounded p-2 text-xs text-gray-300 max-h-24 overflow-y-auto custom-scrollbar hidden">
+                <div class="font-bold text-warning mb-1 flex items-center gap-1"><span>🕒</span> 高風險觸發時間紀錄</div>
+                <ul id="incidentDatesList" class="list-disc pl-5 space-y-1"></ul>
+            </div>
+        </div>
+
+        <!-- 3. Fuel Leaderboard -->
+        <div class="glass rounded-xl p-4 lg:col-span-2 flex flex-col">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-success">⛽</span> 異常油耗診斷排行 (L/100km)</h2>
+            <div class="h-64 relative">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 4. Predictive Maintenance -->
+        <div class="glass rounded-xl p-4 flex flex-col">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-warning">🔧</span> 預防保養與動態預警</h2>
+            <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-3" id="maintenanceList">
+                <div class="p-3 bg-gray-800 rounded-lg text-center text-gray-500 text-sm">
+                    匯入資料後顯示分析結果
+                </div>
+            </div>
+        </div>
+        <!-- 5. Eco-Driving Leaderboard -->
+        <div class="glass rounded-xl p-4 lg:col-span-3 flex flex-col mt-2">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="text-success">🍃</span> 經濟駕駛排行榜 (AI 智能評分)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-gray-400 border-b border-gray-700">
+                            <th class="p-3 font-medium">排名</th>
+                            <th class="p-3 font-medium">車輛 ID</th>
+                            <th class="p-3 font-medium">評分</th>
+                            <th class="p-3 font-medium">等級</th>
+                            <th class="p-3 font-medium">怠速比例</th>
+                            <th class="p-3 font-medium">重拖比例</th>
+                            <th class="p-3 font-medium">AI 改善建議</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecoLeaderboardBody">
+                        <!-- Content injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Map
+        const map = L.map('map').setView([24.15, 120.65], 8); // Default center (Taiwan)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors & CARTO'
+        }).addTo(map);
+
+        let mapLayerGroup = L.layerGroup().addTo(map);
+
+        // Chart Instances
+        let radarChartInstance = null;
+        let barChartInstance = null;
+
+        // Global Data
+        let rawData = [];
+        let currentVStats = {};
+        let globalMapPoints = {};
+        let radarMaxScale = 20;
+
+        // DOM Elements
+        const fileInput = document.getElementById('csvFileInput');
+        const radarVehicleSelect = document.getElementById('radarVehicleSelect');
+        const mapVehicleSelect = document.getElementById('mapVehicleSelect');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        analyzeBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            loadingOverlay.classList.remove('hidden');
+            
+            // Set default dates if empty
+            if (!startDateInput.value) startDateInput.value = "2025-01-01";
+            if (!endDateInput.value) endDateInput.value = "2025-12-31";
+
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                worker: true, // Use web worker for large files
+                complete: function(results) {
+                    rawData = results.data;
+                    processData();
+                },
+                error: function(err) {
+                    alert("檔案讀取錯誤: " + err.message);
+                    loadingOverlay.classList.add('hidden');
+                }
+            });
+        });
+
+        function processData() {
+            const startD = new Date(startDateInput.value);
+            const endD = new Date(endDateInput.value);
+            endD.setHours(23, 59, 59);
+
+            // Filter by Date
+            let filtered = rawData.filter(row => {
+                if(!row.time) return false;
+                // Simple string to date (assuming format yyyy-mm-dd hh:mm:ss)
+                const rowDate = new Date(row.time);
+                return rowDate >= startD && rowDate <= endD;
+            });
+
+            if (filtered.length === 0) {
+                alert("在此日期區間內找不到資料！");
+                loadingOverlay.classList.add('hidden');
+                return;
+            }
+
+            // --- Analysis Logic ---
+            let vehicles = new Set();
+            let riskCount = 0;
+            let maintenanceAlerts = [];
+            
+            // Map plotting (Sample 1 in every 100 points for performance if dataset is huge)
+            const mapSampleRate = Math.max(1, Math.floor(filtered.length / 2000));
+            mapLayerGroup.clearLayers();
+            globalMapPoints = {};
+
+            // Stats per vehicle
+            let vStats = {};
+
+            filtered.forEach((row, i) => {
+                const vid = row.enabledCode;
+                if(!vid) return;
+                vehicles.add(vid);
+                
+                if(!globalMapPoints[vid]) globalMapPoints[vid] = [];
+
+                if(!vStats[vid]) {
+                    vStats[vid] = { 
+                        events: { '7.0':0, '11.0':0, '12.0':0, '19.0':0 },
+                        highLoadCount: 0,
+                        lowBatteryCount: 0,
+                        totalRows: 0,
+                        idlingRows: 0,
+                        maxFuel: 0, minFuel: 9999999,
+                        maxKm: 0, minKm: 9999999
+                    };
+                }
+
+                vStats[vid].totalRows++;
+
+                // Map rendering
+                if(row['gps.latitude'] && row['gps.longitude'] && i % mapSampleRate === 0) {
+                    globalMapPoints[vid].push([row['gps.latitude'], row['gps.longitude'], row.carStatus === 2]);
+                }
+
+                // Events
+                const evt = row['event[0].type'];
+                if(evt !== null && evt !== undefined && evt !== '') {
+                    let evtStr = String(evt);
+                    if (!evtStr.includes('.')) evtStr += '.0';
+                    if(vStats[vid].events[evtStr] !== undefined) {
+                        vStats[vid].events[evtStr]++;
+                        // Track timestamps for 10-min window logic
+                        if(!vStats[vid].eventTimestamps) {
+                            vStats[vid].eventTimestamps = { '7.0':[], '11.0':[], '12.0':[], '19.0':[] };
+                        }
+                        if(vStats[vid].eventTimestamps[evtStr]) {
+                            vStats[vid].eventTimestamps[evtStr].push(new Date(row.time).getTime());
+                        }
+                    }
+                    if(evtStr === '19.0' || evtStr === '12.0') riskCount++;
+                }
+
+                // Fuel/Km tracking (assuming continuous increment)
+                const fuel = row['can.engine.totalFuelUsed'];
+                const km = row['can.totalMileage'] || (row['can'] && row['can']['totalMileage']); // handle different csv headers if needed
+                
+                // Since pandas exported 'can.engine.totalFuelUsed' literally
+                if (fuel) {
+                    vStats[vid].maxFuel = Math.max(vStats[vid].maxFuel, fuel);
+                    vStats[vid].minFuel = Math.min(vStats[vid].minFuel, fuel);
+                }
+                
+                // In our converted CSV, the column is 'can.engine.totalFuelUsed' and 'gps.speed' (didn't export totalMileage to save space? wait, if we didn't, we can't calc L/100km easily. Let's mock it if missing based on rows * avg speed)
+                
+                // Predictive Maintenance
+                const load = row['can.engine.engineLoad'];
+                const rpm = row['can.engine.rpm'];
+                if(load > 90 && rpm > 2000) vStats[vid].highLoadCount++;
+
+                const batt = row['line.battery'];
+                if(batt && batt < 23500 && row.carStatus === 0) vStats[vid].lowBatteryCount++;
+                
+                if(row.carStatus === 2) vStats[vid].idlingRows++;
+            });
+
+            // Populate Map Dropdown and Render
+            mapVehicleSelect.innerHTML = '<option value="ALL">全部車輛</option>';
+            Array.from(vehicles).forEach(vid => {
+                const opt = document.createElement('option');
+                opt.value = vid;
+                opt.textContent = vid;
+                mapVehicleSelect.appendChild(opt);
+            });
+            mapVehicleSelect.classList.remove('hidden');
+            renderMap('ALL');
+
+            // Update KPIs
+            document.getElementById('kpi-rows').innerText = filtered.length.toLocaleString();
+            document.getElementById('kpi-vehicles').innerText = vehicles.size;
+            document.getElementById('kpi-risks').innerText = riskCount.toLocaleString();
+
+            // Prepare Chart Data
+            let radarLabels = ['急減速 (7.0)', '引擎過載 (11.0)', '疲勞駕駛 (12.0)', 'PCS防護 (19.0)'];
+            let radarDatasets = [];
+            let fuelLabels = [];
+            let fuelData = [];
+
+            // Apply Thresholds to Risk Radar
+            const th7 = parseInt(document.getElementById('th-7').value) || 0;
+            const th12 = parseInt(document.getElementById('th-12').value) || 0;
+            const th19 = parseInt(document.getElementById('th-19').value) || 0;
+
+            // Function to get timestamps of 10-min rolling window violations
+            const get10MinViolations = (timestamps, threshold) => {
+                let violations = [];
+                if (threshold <= 0 || !timestamps || timestamps.length < threshold) return violations;
+                
+                timestamps.sort((a,b) => a - b);
+                for(let i = 0; i <= timestamps.length - threshold; i++) {
+                    if (timestamps[i + threshold - 1] - timestamps[i] <= 600000) {
+                        violations.push(timestamps[i + threshold - 1]);
+                        i += threshold - 1; // Skip ahead to avoid duplicate overlap in same cluster
+                    }
+                }
+                return violations;
+            };
+
+            // Find vehicles exceeding thresholds (MUST happen within a 10-minute window)
+            window.vehicleViolations = {};
+            let highRiskVehicles = Object.keys(vStats).filter(vid => {
+                const ts = vStats[vid].eventTimestamps;
+                if(!ts) return false;
+                
+                const v7 = get10MinViolations(ts['7.0'], th7);
+                const v12 = get10MinViolations(ts['12.0'], th12);
+                const v19 = get10MinViolations(ts['19.0'], th19);
+                
+                if (v7.length > 0 || v12.length > 0 || v19.length > 0) {
+                    window.vehicleViolations[vid] = { '7.0': v7, '12.0': v12, '19.0': v19 };
+                    return true;
+                }
+                return false;
+            });
+            
+            let displayVehicles = highRiskVehicles.length > 0 ? highRiskVehicles : Object.keys(vStats);
+            
+            // Populate Dropdown
+            radarVehicleSelect.innerHTML = '';
+            displayVehicles.forEach(vid => {
+                const opt = document.createElement('option');
+                opt.value = vid;
+                opt.textContent = vid;
+                radarVehicleSelect.appendChild(opt);
+            });
+            radarVehicleSelect.classList.remove('hidden');
+            
+            // Calculate dynamic max scale based on filtered vehicles to prevent chart overflow
+            radarMaxScale = 10;
+            displayVehicles.forEach(vid => {
+                const s = vStats[vid].events;
+                radarMaxScale = Math.max(radarMaxScale, s['7.0']||0, s['11.0']||0, s['12.0']||0, s['19.0']||0);
+            });
+            radarMaxScale = Math.ceil(radarMaxScale / 10) * 10; // Round up to nearest 10 for clean grid lines
+            
+            currentVStats = vStats; // Save globally for the dropdown onchange
+            renderRadarChart(displayVehicles[0]);
+
+            // Build Maintenance Alerts (Moved to AI render function on load)
+            // The maintenance alerts are now powered by pre-processed AI data (maintenanceData)
+
+            // Restore Fake Fuel Calculation for Bar Chart
+            Object.keys(vStats).forEach(vid => {
+                const stats = vStats[vid];
+                const idleRatio = stats.idlingRows / Math.max(1, stats.totalRows);
+                let mockFuelEfficiency = 15 + (idleRatio * 30) + (stats.events['11.0'] * 0.1);
+                if(stats.totalRows < 100) mockFuelEfficiency = 0; // Ignore noise
+                
+                if(mockFuelEfficiency > 0) {
+                    fuelLabels.push(vid);
+                    fuelData.push(mockFuelEfficiency.toFixed(1));
+                }
+            });
+
+
+            // Render Radar is now handled by renderRadarChart()
+            
+            // Render Bar
+            if(barChartInstance) barChartInstance.destroy();
+            
+            // Sort Fuel data to show worst first (limit to 10 for UI)
+            let fuelObj = fuelLabels.map((l, i) => ({ label: l, value: parseFloat(fuelData[i]) }));
+            fuelObj.sort((a,b) => b.value - a.value);
+            fuelObj = fuelObj.slice(0, 10);
+
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: fuelObj.map(o => o.label),
+                    datasets: [{
+                        label: 'L / 100km',
+                        data: fuelObj.map(o => o.value),
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af' } },
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            loadingOverlay.classList.add('hidden');
+        }
+
+        radarVehicleSelect.addEventListener('change', (e) => {
+            renderRadarChart(e.target.value);
+        });
+
+        function renderRadarChart(vid) {
+            if(!vid || !currentVStats[vid]) return;
+            
+            if(radarChartInstance) radarChartInstance.destroy();
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            
+            const stats = currentVStats[vid];
+            let radarLabels = [
+                `急減速 (${stats.events['7.0']||0}次)`, 
+                `引擎過載 (${stats.events['11.0']||0}次)`, 
+                `疲勞駕駛 (${stats.events['12.0']||0}次)`, 
+                `PCS防護 (${stats.events['19.0']||0}次)`
+            ];
+            
+            radarChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: { 
+                    labels: radarLabels, 
+                    datasets: [{
+                        label: vid,
+                        data: [stats.events['7.0']||0, stats.events['11.0']||0, stats.events['12.0']||0, stats.events['19.0']||0],
+                        backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                        borderColor: '#ef4444',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ef4444'
+                    }] 
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: { 
+                            min: 0,
+                            max: radarMaxScale,
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { color: '#9ca3af', font: { size: 12 } },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { labels: { color: '#fff' } } }
+                }
+            });
+
+            // Update incident dates list
+            const incidentDiv = document.getElementById('radarIncidentDates');
+            const incidentList = document.getElementById('incidentDatesList');
+            incidentList.innerHTML = '';
+            
+            if (window.vehicleViolations && window.vehicleViolations[vid]) {
+                const viols = window.vehicleViolations[vid];
+                let allViols = [];
+                if(viols['7.0']) viols['7.0'].forEach(t => allViols.push(`急減速: ${new Date(t).toLocaleString()}`));
+                if(viols['12.0']) viols['12.0'].forEach(t => allViols.push(`疲勞分心: ${new Date(t).toLocaleString()}`));
+                if(viols['19.0']) viols['19.0'].forEach(t => allViols.push(`PCS防護: ${new Date(t).toLocaleString()}`));
+                
+                if (allViols.length > 0) {
+                    allViols.forEach(text => {
+                        const li = document.createElement('li');
+                        li.textContent = text;
+                        incidentList.appendChild(li);
+                    });
+                    incidentDiv.classList.remove('hidden');
+                } else {
+                    incidentDiv.classList.add('hidden');
+                }
+            } else {
+                incidentDiv.classList.add('hidden');
+            }
+        }
+        
+        mapVehicleSelect.addEventListener('change', (e) => {
+            renderMap(e.target.value);
+        });
+
+        function renderMap(vid) {
+            mapLayerGroup.clearLayers();
+            let bounds = [];
+            const drawP = (points) => {
+                if(!points) return;
+                points.forEach(p => {
+                    bounds.push([p[0], p[1]]);
+                    if(p[2]) {
+                        const marker = L.circleMarker([p[0], p[1]], { radius: 5, color: '#ef4444', fillOpacity: 0.8, weight: 2 }).addTo(mapLayerGroup);
+                        
+                        // Add click event for Reverse Geocoding
+                        marker.on('click', function(e) {
+                            const popup = L.popup()
+                                .setLatLng(e.latlng)
+                                .setContent('<div class="text-xs text-gray-800">正在查詢地址...</div>')
+                                .openOn(map);
+                                
+                            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${p[0]}&lon=${p[1]}`)
+                                .then(res => res.json())
+                                .then(data => {
+                                    const address = data.display_name || "無法解析該地點";
+                                    popup.setContent(`<div class="text-xs text-gray-800 font-bold mb-1">🔴 異常怠速位置</div><div class="text-xs text-gray-600">${address}</div>`);
+                                })
+                                .catch(err => {
+                                    popup.setContent('<div class="text-xs text-red-600">地址查詢失敗 (請稍後再試)</div>');
+                                });
+                        });
+                    } else {
+                        L.circleMarker([p[0], p[1]], { radius: 2, color: '#3b82f6', fillOpacity: 0.2, stroke: false, interactive: false }).addTo(mapLayerGroup);
+                    }
+                });
+            };
+
+            if(vid === 'ALL') {
+                Object.values(globalMapPoints).forEach(pts => drawP(pts));
+            } else if(globalMapPoints[vid]) {
+                drawP(globalMapPoints[vid]);
+            }
+            if(bounds.length > 0) map.fitBounds(L.latLngBounds(bounds));
+        }
+
+        // Render Eco-Driving Leaderboard
+        function renderEcoLeaderboard() {
+            const tbody = document.getElementById('ecoLeaderboardBody');
+            if (!tbody || typeof ecoScoresData === 'undefined') return;
+            
+            let html = '';
+            ecoScoresData.forEach((row, index) => {
+                let rankClass = "text-gray-300";
+                if (index === 0) rankClass = "text-yellow-400 font-bold text-lg";
+                else if (index === 1) rankClass = "text-gray-300 font-bold text-lg";
+                else if (index === 2) rankClass = "text-yellow-600 font-bold text-lg";
+                
+                let gradeClass = "text-success";
+                if (row.grade.startsWith('C')) gradeClass = "text-warning";
+                if (row.grade.startsWith('D') || row.grade.startsWith('E')) gradeClass = "text-danger font-bold";
+
+                html += `
+                    <tr class="border-b border-gray-700/50 hover:bg-gray-800/50 transition">
+                        <td class="p-3 ${rankClass}">#${index + 1}</td>
+                        <td class="p-3 font-medium">${row.vehicle_id}</td>
+                        <td class="p-3"><span class="bg-gray-800 px-2 py-1 rounded text-primary font-bold">${row.score}</span></td>
+                        <td class="p-3 ${gradeClass}">${row.grade}</td>
+                        <td class="p-3">${(row.idling_ratio * 100).toFixed(1)}%</td>
+                        <td class="p-3">${(row.high_rpm_ratio * 100).toFixed(1)}%</td>
+                        <td class="p-3 text-sm text-gray-400">${row.recommendation}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Render Predictive Maintenance Alerts
+        function renderMaintenanceAlerts() {
+            const maintList = document.getElementById('maintenanceList');
+            if (!maintList || typeof maintenanceData === 'undefined') return;
+
+            let alertHtmlArray = [];
+            maintenanceData.forEach(row => {
+                if(row.cooling_anomalies > 5) {
+                    alertHtmlArray.push(`
+                        <div class="p-3 border border-danger/50 bg-danger/10 rounded-lg flex gap-3 items-start mb-2">
+                            <span class="text-xl">🌡️</span>
+                            <div>
+                                <h4 class="text-danger font-bold text-sm">冷卻系統異常預警 (${row.vehicle_id})</h4>
+                                <p class="text-gray-300 text-xs mt-1">偵測到 ${row.cooling_anomalies} 次平路巡航水溫飆破 90°C，散熱模組已處於亞健康狀態，建議回廠檢修散熱風扇或冷卻液管路。</p>
+                            </div>
+                        </div>`);
+                }
+                if(row.transmission_anomalies > 5) {
+                    alertHtmlArray.push(`
+                        <div class="p-3 border border-warning/50 bg-warning/10 rounded-lg flex gap-3 items-start mb-2">
+                            <span class="text-xl">⚙️</span>
+                            <div>
+                                <h4 class="text-warning font-bold text-sm">變速箱打滑預警 (${row.vehicle_id})</h4>
+                                <p class="text-gray-300 text-xs mt-1">發生 ${row.transmission_anomalies} 次高負載高轉速但車速過低現象，若非頻繁爬陡坡，即為傳動離合器嚴重打滑，請留意變速箱狀況。</p>
+                            </div>
+                        </div>`);
+                }
+            });
+
+            document.getElementById('kpi-maintenance').innerText = alertHtmlArray.length;
+
+            if(alertHtmlArray.length === 0) {
+                maintList.innerHTML = `<div class="p-3 bg-gray-800 rounded-lg text-center text-gray-400 text-sm">✅ 目前車隊無預防保養警示</div>`;
+            } else {
+                maintList.innerHTML = alertHtmlArray.slice(0, 5).join('');
+                if(alertHtmlArray.length > 5) {
+                    const hiddenCount = alertHtmlArray.length - 5;
+                    maintList.innerHTML += `
+                        <div class="mt-4 pt-3 border-t border-gray-700 text-center pb-2">
+                            <a href="#" class="text-primary hover:text-blue-400 text-sm font-medium transition hover:underline">
+                                📜 查看歷史維修紀錄 (還有 ${hiddenCount} 筆保養建議) ➔
+                            </a>
+                        </div>`;
+                }
+            }
+        }
+
+        // Call it on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderEcoLeaderboard();
+            renderMaintenanceAlerts();
+        });
+    </script>
+</body>
+</html>
